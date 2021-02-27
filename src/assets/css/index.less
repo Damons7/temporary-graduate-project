@@ -1,0 +1,103 @@
+/*
+ * @Description: 首页css样式
+ * @Author: hai-27
+ * @Date: 2020-02-07 16:23:00
+ * @LastEditors: hai-27
+ * @LastEditTime: 2020-02-27 00:46:58
+ */
+
+/* 轮播图CSS */
+.block {
+  margin: 0 auto;
+  max-width: 1225px;
+}
+
+/* 轮播图CSS lihongzhi*/
+.home-swiper{
+  margin: 0 auto;
+  max-width: 1225px;
+  .el-carousel__item{
+    &:nth-child(2n) {
+      background-color: #99a9bf;
+    }
+    &:nth-child(2n + 1) {
+      background-color: #d3dce6;
+    }
+  }
+}
+/* 轮播图CSS END */
+
+.home-main-box {
+  background-color: #f5f5f5;
+  padding-bottom: 20px;
+  .home-main {
+    margin: 0 auto;
+    max-width: 1225px;
+    .myTest{
+      margin-top: 40px;
+      img{
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+      }
+    }
+    .box-head {
+      height: 58px;
+      margin-top: 20px;
+      .box-title {
+        float: left;
+        font-size: 22px;
+        font-weight: 200;
+        line-height: 58px;
+        color: #333;
+      }
+      .box-more {
+        float: right;
+        a {
+          font-size: 16px;
+          line-height: 58px;
+          color: #424242;
+          &:hover {
+            color: #ff6700;
+          }
+        }
+      }
+    }
+    .box-body {
+      height: 615px;
+      .box-promo-list {
+        float: left;
+        height: 615px;
+        width: 234px;
+        li {
+          z-index: 1;
+          width: 234px;
+          height: 300px;
+          margin-bottom: 14.5px;
+          -webkit-transition: all 0.2s linear;
+          transition: all 0.2s linear;
+          &:hover {
+            z-index: 2;
+            -webkit-box-shadow: 0 15px 30px rgba(0, 0, 0, .1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, .1);
+            -webkit-transform: translate3d(0, -2px, 0);
+            transform: translate3d(0, -2px, 0);
+          }
+          img {
+            width: 234px;
+            height: 300px;
+          }
+          
+        }
+        img {
+          width: 234px;
+        }
+      }
+      .box-list {
+        float: left;
+        height: 615px;
+        width: 991px;
+      }
+    }
+  }
+}
