@@ -6,8 +6,8 @@
   <div class="item">
     <ul>
       <li v-for="item in list" :key="item.product_id">
-        <!-- <el-popover placement="top">
-          <p>确定删除吗？</p>
+        <el-popover placement="top" v-model="visible">
+          <p class="popover-p">确定删除吗？</p>
           <div style="text-align: right; margin: 10px 0 0">
             <el-button
               type="primary"
@@ -15,13 +15,16 @@
               @click="deleteCollect(item.product_id)"
               >确定</el-button
             >
+            <el-button type="default" size="mini" @click="visible = false"
+              >取消</el-button
+            >
           </div>
           <i
             class="el-icon-close delete"
             slot="reference"
             v-show="isDelete"
           ></i>
-        </el-popover> -->
+        </el-popover>
         <router-link
           :to="{
             path: '/goods/details',
@@ -59,7 +62,9 @@ export default {
   // isMore为是否显示“浏览更多”
   props: ["list", "isMore", "isDelete"],
   data() {
-    return {};  
+    return {
+      visible: false,
+    };
   },
   computed: {
     // 通过list获取当前显示的商品的分类ID，用于“浏览更多”链接的参数
@@ -78,9 +83,12 @@ export default {
   },
   methods: {
     deleteCollect(product_id) {
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
       this.$axios
-        .post("/user/collect/deleteCollect", {
-          user_id: this.$store.getters.getUser.user_id,
+        .post("/users/collect/deleteCollect", {
+          user_id: this.$store.getters.getUser.uuid,
           product_id: product_id,
         })
         .then((res) => {
@@ -101,6 +109,7 @@ export default {
               // 提示删除失败信息
               this.notifyError(res.data.msg);
           }
+          this.visible = false;
         })
         .catch((err) => {
           return Promise.reject(err);
@@ -194,5 +203,8 @@ export default {
       }
     }
   }
+}
+.popover-p {
+  margin: 20px 40px;
 }
 </style>

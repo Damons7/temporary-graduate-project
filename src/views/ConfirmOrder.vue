@@ -1,9 +1,6 @@
 <!--
  * @Description: 确认订单页面组件
- * @Author: hai-27
- * @Date: 2020-02-23 23:46:39
- * @LastEditors: hai-27
- * @LastEditTime: 2020-03-29 13:10:21
+ * @Author: 李鸿智
  -->
 <template>
   <div class="confirmOrder">
@@ -23,21 +20,79 @@
     <div class="content">
       <!-- 选择地址 -->
       <div class="section-address">
+        <el-popover
+          class="address-popover"
+          width="180"
+          v-model="delAddressVisible"
+        >
+          <p>确定删除地址？</p>
+          <div style="text-align: right; margin: 10px 0 0">
+            <el-button type="primary" size="mini" @click="delAddress()"
+              >确定</el-button
+            >
+            <el-button
+              size="mini"
+              type="default"
+              @click="delAddressVisible = false"
+              >取消</el-button
+            >
+          </div>
+        </el-popover>
         <p class="title">收货地址</p>
         <div class="address-body">
           <ul>
             <li
-              :class="item.id == confirmAddress ? 'in-section' : ''"
-              v-for="item in address"
-              :key="item.id"
+              :class="
+                index == confirmAddress ? 'in-section address-li' : 'address-li'
+              "
+              v-for="(item, index) in address"
+              :key="item._id"
+              @click="chooseOne($event, index)"
             >
-              <h2>{{item.name}}</h2>
-              <p class="phone">{{item.phone}}</p>
-              <p class="address">{{item.address}}</p>
+              <div v-if="!item.isShowAddressIn">
+                <div
+                  class="address-edit address-com"
+                  @click="
+                    item.isShowAddressIn = true;
+                    updateAddress = { ...item };
+                  "
+                >
+                  编辑
+                </div>
+                <div
+                  class="address-delete address-com"
+                  @click="delAddressVisible = true"
+                >
+                  删除
+                </div>
+                <h2>{{ item.name }}</h2>
+                <p class="phone">{{ item.phone }}</p>
+                <p class="address">{{ item.address }}</p>
+              </div>
+              <div v-else>
+                <Form
+                  :addressForms="updateAddress"
+                  @setIsShowAddressIn="setIsShowUpdate"
+                  @OnOKAddress="updateAddressFun"
+                ></Form>
+              </div>
             </li>
-            <li class="add-address">
+
+            <li
+              class="add-address"
+              v-if="!isShowAddressIn"
+              @click="isShowAddressIn = true"
+            >
               <i class="el-icon-circle-plus-outline"></i>
               <p>添加新地址</p>
+            </li>
+            <li v-else class="add-address-in">
+              <Form
+                :addressForms="addressForm"
+                @setIsShowAddressIn="setIsShowAdd"
+                @OnOKAddress="addAddress"
+              ></Form>
+              <!-- <div>11</div> -->
             </li>
           </ul>
         </div>
@@ -51,10 +106,10 @@
           <ul>
             <li v-for="item in getCheckGoods" :key="item.id">
               <img :src="$target + item.productImg" />
-              <span class="pro-name">{{item.productName}}</span>
-              <span class="pro-price">{{item.price}}元 x {{item.num}}</span>
+              <span class="pro-name">{{ item.productName }}</span>
+              <span class="pro-price">{{ item.price }}元 x {{ item.num }}</span>
               <span class="pro-status"></span>
-              <span class="pro-total">{{item.price * item.num}}元</span>
+              <span class="pro-total">{{ item.price * item.num }}元</span>
             </li>
           </ul>
         </div>
@@ -83,11 +138,11 @@
           <ul>
             <li>
               <span class="title">商品件数：</span>
-              <span class="value">{{getCheckNum}}件</span>
+              <span class="value">{{ getCheckNum }}件</span>
             </li>
             <li>
               <span class="title">商品总价：</span>
-              <span class="value">{{getTotalPrice}}元</span>
+              <span class="value">{{ getTotalPrice }}元</span>
             </li>
             <li>
               <span class="title">活动优惠：</span>
@@ -104,7 +159,8 @@
             <li class="total">
               <span class="title">应付总额：</span>
               <span class="value">
-                <span class="total-price">{{getTotalPrice}}</span>元
+                <span class="total-price">{{ getTotalPrice }}</span
+                >元
               </span>
             </li>
           </ul>
@@ -115,8 +171,15 @@
       <!-- 结算导航 -->
       <div class="section-bar">
         <div class="btn">
-          <router-link to="/shoppingCart" class="btn-base btn-return">返回购物车</router-link>
-          <a href="javascript:void(0);" @click="addOrder" class="btn-base btn-primary">结算</a>
+          <router-link to="/shoppingCart" class="btn-base btn-return"
+            >返回购物车</router-link
+          >
+          <a
+            href="javascript:void(0);"
+            @click="addOrder"
+            class="btn-base btn-primary"
+            >结算</a
+          >
         </div>
       </div>
       <!-- 结算导航END -->
@@ -127,27 +190,28 @@
 <script>
 import { mapGetters } from "vuex";
 import { mapActions } from "vuex";
+import Form from "../components/Form.vue";
 export default {
+  components: { Form },
   name: "",
   data() {
     return {
-      // 虚拟数据
-      confirmAddress: 1, // 选择的地址id
+      confirmAddress: 0, // 选择的地址id,地址高亮区域
       // 地址列表
-      address: [
-        {
-          id: 1,
-          name: "陈同学",
-          phone: "13580018623",
-          address: "广东 广州市 白云区 江高镇 广东白云学院"
-        },
-        {
-          id: 2,
-          name: "陈同学",
-          phone: "13580018623",
-          address: "广东 茂名市 化州市 杨梅镇 ***"
-        }
-      ]
+      address: [],
+      //更新地址列表
+      updateAddress: {},
+      //删除地址确认弹框
+      delAddressVisible: false,
+      //新增地址信息
+      addressForm: {
+        name: "",
+        isDefault: false,
+        phone: "",
+        address: "",
+      },
+      //是否显示添加地址表单
+      isShowAddressIn: false,
     };
   },
   created() {
@@ -156,20 +220,27 @@ export default {
       this.notifyError("请勾选商品后再结算");
       this.$router.push({ path: "/shoppingCart" });
     }
+    //获取地址
+    this.getAddress();
   },
   computed: {
     // 结算的商品数量; 结算商品总计; 结算商品信息
-    ...mapGetters(["getCheckNum", "getTotalPrice", "getCheckGoods"])
+    ...mapGetters(["getCheckNum", "getTotalPrice", "getCheckGoods"]),
   },
   methods: {
     ...mapActions(["deleteShoppingCart"]),
+    //添加订单
     addOrder() {
+       this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
       this.$axios
-        .post("/api/user/order/addOrder", {
-          user_id: this.$store.getters.getUser.user_id,
-          products: this.getCheckGoods
+        .post("/users/order/addOrder", {
+          user_id: this.$store.getters.getUser.uuid,
+          products: this.getCheckGoods,
+          address:this.address[this.confirmAddress]
         })
-        .then(res => {
+        .then((res) => {
           let products = this.getCheckGoods;
           switch (res.data.code) {
             // “001”代表结算成功
@@ -189,266 +260,430 @@ export default {
               this.notifyError(res.data.msg);
           }
         })
-        .catch(err => {
+        .catch((err) => {
           return Promise.reject(err);
         });
-    }
-  }
+    },
+    chooseOne(e, index) {
+      this.confirmAddress = index;
+    },
+    setIsShowAdd() {
+      this.isShowAddressIn = false;
+    },
+    setIsShowUpdate() {
+      this.address[this.confirmAddress].isShowAddressIn = false;
+    },
+    //获取地址
+    getAddress() {
+      // 判断是否登录,没有登录则显示登录组件
+      if (!this.$store.getters.getUser) {
+        this.$store.dispatch("setShowLogin", true);
+        return;
+      }
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
+      this.$axios
+        .post("/users/getAddress", {
+          user_id: this.$store.getters.getUser.uuid,
+        })
+        .then((res) => {
+          this.address = res.data.address.map((item) => {
+            item.isShowAddressIn = false;
+            return item;
+          });
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+    //添加地址
+    addAddress() {
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
+
+      this.$axios
+        .post("/users/addAddress", {
+          user_id: this.$store.getters.getUser.uuid,
+          addressInfos: this.addressForm,
+        })
+        .then((res) => {
+          // 成功
+          if (res.data.code === "001") {
+            this.address.push(
+              ...res.data.address.map((item) => {
+                item.isShowAddressIn = false;
+                return item;
+              })
+            );
+            this.confirmAddress = this.address.length - 1;
+            this.isShowAddressIn = false;
+            this.notifySucceed(res.data.msg);
+          } else {
+            // 弹出通知框提示失败信息
+            this.notifyError(res.data.msg);
+          }
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+    // //删除地址
+    delAddress() {
+      const addressID = this.address[this.confirmAddress]._id;
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
+
+      this.$axios
+        .post("/users/delAddress", {
+          _id: addressID,
+        })
+        .then((res) => {
+          // 成功
+          if (res.data.code === "001") {
+            this.address = this.address.filter(
+              (item) => item._id !== addressID
+            );
+            this.confirmAddress = 0;
+            this.notifySucceed(res.data.msg);
+            this.delAddressVisible = false;
+          } else {
+            // 弹出通知框提示失败信息
+            this.notifyError(res.data.msg);
+          }
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+    // //更新地址
+    updateAddressFun() {
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
+      const _updateAddress = { ...this.updateAddress };
+      this.$axios
+        .post("/users/updateAddress", {
+          _id: this.address[this.confirmAddress]._id,
+          addressInfos: this.updateAddress,
+        })
+        .then((res) => {
+          // 成功
+          if (res.data.code === "001") {
+            const _thisAddress = this.address[this.confirmAddress];
+            _thisAddress.name = _updateAddress.name;
+            _thisAddress.phone = _updateAddress.phone;
+            _thisAddress.address = _updateAddress.address;
+            _thisAddress.isDefault = _updateAddress.isDefault;
+            _thisAddress.updateDate = _updateAddress.updateDate;
+            _thisAddress.isShowAddressIn = false;
+            this.notifySucceed(res.data.msg);  
+          } else {
+            // 弹出通知框提示失败信息
+            this.notifyError(res.data.msg);
+          }
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+  },
 };
 </script>
-<style scoped>
+<style lang='less'>
 .confirmOrder {
   background-color: #f5f5f5;
   padding-bottom: 20px;
-}
-/* 头部CSS */
-.confirmOrder .confirmOrder-header {
-  background-color: #fff;
-  border-bottom: 2px solid #ff6700;
-  margin-bottom: 20px;
-}
-.confirmOrder .confirmOrder-header .header-content {
-  width: 1225px;
-  margin: 0 auto;
-  height: 80px;
-}
-.confirmOrder .confirmOrder-header .header-content p {
-  float: left;
-  font-size: 28px;
-  line-height: 80px;
-  color: #424242;
-  margin-right: 20px;
-}
-.confirmOrder .confirmOrder-header .header-content p i {
-  font-size: 45px;
-  color: #ff6700;
-  line-height: 80px;
-}
-/* 头部CSS END */
+  /* 头部CSS */
+  .confirmOrder-header {
+    background-color: #fff;
+    border-bottom: 2px solid #ff6700;
+    margin-bottom: 20px;
+    .header-content {
+      width: 1225px;
+      margin: 0 auto;
+      height: 80px;
+      p {
+        float: left;
+        font-size: 28px;
+        line-height: 80px;
+        color: #424242;
+        margin-right: 20px;
+        i {
+          font-size: 45px;
+          color: #ff6700;
+          line-height: 80px;
+        }
+      }
+    }
+  }
+  /* 头部CSS END */
 
-/* 主要内容容器CSS */
-.confirmOrder .content {
-  width: 1225px;
-  margin: 0 auto;
-  padding: 48px 0 0;
-  background-color: #fff;
-}
+  /* 主要内容容器CSS */
+  .content {
+    width: 1225px;
+    margin: 0 auto;
+    padding: 48px 0 0;
+    background-color: #fff;
+    /* 选择地址CSS */
+    .section-address {
+      margin: 0 48px;
+      overflow: hidden;
+      .address-popover {
+        position: fixed;
+        z-index: 999;
+        top: 32%;
+        right: 56%;
+      }
+      .title {
+        color: #333;
+        font-size: 18px;
+        line-height: 20px;
+        margin-bottom: 20px;
+      }
+    }
+    .address-body {
+      li {
+        float: left;
+        color: #333;
+        width: 220px;
+        height: 178px;
+        border: 1px solid #e0e0e0;
+        padding: 15px 24px 0;
+        margin-right: 17px;
+        margin-bottom: 24px;
+        h2 {
+          font-size: 18px;
+          font-weight: normal;
+          line-height: 30px;
+          margin-bottom: 10px;
+        }
+        p {
+          font-size: 14px;
+          color: #757575;
+        }
+        .address {
+          padding: 10px 0;
+          max-width: 180px;
+          max-height: 88px;
+          line-height: 22px;
+          overflow: hidden;
+        }
+      }
+      .in-section {
+        border: 1px solid #ff6700;
+      }
+      .address-li {
+        position: relative;
+        .address-com {
+          position: absolute;
+          top: 12px;
+          color: #d0d0d0;
+          font-size: 14px;
+          &:hover {
+            color: #999;
+            cursor: pointer;
+          }
+        }
+        .address-edit {
+          right: 50px;
+        }
+        .address-delete {
+          right: 10px;
+        }
+      }
+      .add-address {
+        text-align: center;
+        line-height: 30px;
+        i {
+          font-size: 30px;
+          padding-top: 50px;
+          text-align: center;
+        }
+      }
+      .add-address-in {
+        width: 400px;
+      }
+    }
+    /* 选择地址CSS END */
 
-/* 选择地址CSS */
-.confirmOrder .content .section-address {
-  margin: 0 48px;
-  overflow: hidden;
-}
-.confirmOrder .content .section-address .title {
-  color: #333;
-  font-size: 18px;
-  line-height: 20px;
-  margin-bottom: 20px;
-}
-.confirmOrder .content .address-body li {
-  float: left;
-  color: #333;
-  width: 220px;
-  height: 178px;
-  border: 1px solid #e0e0e0;
-  padding: 15px 24px 0;
-  margin-right: 17px;
-  margin-bottom: 24px;
-}
-.confirmOrder .content .address-body .in-section {
-  border: 1px solid #ff6700;
-}
-.confirmOrder .content .address-body li h2 {
-  font-size: 18px;
-  font-weight: normal;
-  line-height: 30px;
-  margin-bottom: 10px;
-}
-.confirmOrder .content .address-body li p {
-  font-size: 14px;
-  color: #757575;
-}
-.confirmOrder .content .address-body li .address {
-  padding: 10px 0;
-  max-width: 180px;
-  max-height: 88px;
-  line-height: 22px;
-  overflow: hidden;
-}
-.confirmOrder .content .address-body .add-address {
-  text-align: center;
-  line-height: 30px;
-}
-.confirmOrder .content .address-body .add-address i {
-  font-size: 30px;
-  padding-top: 50px;
-  text-align: center;
-}
-/* 选择地址CSS END */
+    /* 商品及优惠券CSS */
+    .section-goods {
+      margin: 0 48px;
+      p.title {
+        color: #333;
+        font-size: 18px;
+        line-height: 40px;
+      }
+      .goods-list {
+        padding: 5px 0;
+        border-top: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+        li {
+          padding: 10px 0;
+          color: #424242;
+          overflow: hidden;
+          img {
+            float: left;
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+          }
+          .pro-name {
+            float: left;
+            width: 650px;
+            line-height: 30px;
+          }
+          .pro-price {
+            float: left;
+            width: 150px;
+            text-align: center;
+            line-height: 30px;
+          }
+          .pro-status {
+            float: left;
+            width: 99px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+          }
+          .pro-total {
+            float: left;
+            width: 190px;
+            text-align: center;
+            color: #ff6700;
+            line-height: 30px;
+          }
+        }
+      }
+    }
+    /* 商品及优惠券CSS END */
 
-/* 商品及优惠券CSS */
-.confirmOrder .content .section-goods {
-  margin: 0 48px;
-}
-.confirmOrder .content .section-goods p.title {
-  color: #333;
-  font-size: 18px;
-  line-height: 40px;
-}
-.confirmOrder .content .section-goods .goods-list {
-  padding: 5px 0;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
-}
-.confirmOrder .content .section-goods .goods-list li {
-  padding: 10px 0;
-  color: #424242;
-  overflow: hidden;
-}
-.confirmOrder .content .section-goods .goods-list li img {
-  float: left;
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-}
-.confirmOrder .content .section-goods .goods-list li .pro-name {
-  float: left;
-  width: 650px;
-  line-height: 30px;
-}
-.confirmOrder .content .section-goods .goods-list li .pro-price {
-  float: left;
-  width: 150px;
-  text-align: center;
-  line-height: 30px;
-}
-.confirmOrder .content .section-goods .goods-list li .pro-status {
-  float: left;
-  width: 99px;
-  height: 30px;
-  text-align: center;
-  line-height: 30px;
-}
-.confirmOrder .content .section-goods .goods-list li .pro-total {
-  float: left;
-  width: 190px;
-  text-align: center;
-  color: #ff6700;
-  line-height: 30px;
-}
-/* 商品及优惠券CSS END */
+    /* 配送方式CSS */
+    .section-shipment {
+      margin: 0 48px;
+      padding: 25px 0;
+      border-bottom: 1px solid #e0e0e0;
+      overflow: hidden;
+      .title {
+        float: left;
+        width: 150px;
+        color: #333;
+        font-size: 18px;
+        line-height: 38px;
+      }
+      .shipment {
+        float: left;
+        line-height: 38px;
+        font-size: 14px;
+        color: #ff6700;
+      }
+    }
+    /* 配送方式CSS END */
 
-/* 配送方式CSS */
-.confirmOrder .content .section-shipment {
-  margin: 0 48px;
-  padding: 25px 0;
-  border-bottom: 1px solid #e0e0e0;
-  overflow: hidden;
-}
-.confirmOrder .content .section-shipment .title {
-  float: left;
-  width: 150px;
-  color: #333;
-  font-size: 18px;
-  line-height: 38px;
-}
-.confirmOrder .content .section-shipment .shipment {
-  float: left;
-  line-height: 38px;
-  font-size: 14px;
-  color: #ff6700;
-}
-/* 配送方式CSS END */
+    /* 发票CSS */
+    .section-invoice {
+      margin: 0 48px;
+      padding: 25px 0;
+      border-bottom: 1px solid #e0e0e0;
+      overflow: hidden;
+      .title {
+        float: left;
+        width: 150px;
+        color: #333;
+        font-size: 18px;
+        line-height: 38px;
+      }
+      .invoice {
+        float: left;
+        line-height: 38px;
+        font-size: 14px;
+        margin-right: 20px;
+        color: #ff6700;
+      }
+    }
+    /* 发票CSS END */
 
-/* 发票CSS */
-.confirmOrder .content .section-invoice {
-  margin: 0 48px;
-  padding: 25px 0;
-  border-bottom: 1px solid #e0e0e0;
-  overflow: hidden;
-}
-.confirmOrder .content .section-invoice .title {
-  float: left;
-  width: 150px;
-  color: #333;
-  font-size: 18px;
-  line-height: 38px;
-}
-.confirmOrder .content .section-invoice .invoice {
-  float: left;
-  line-height: 38px;
-  font-size: 14px;
-  margin-right: 20px;
-  color: #ff6700;
-}
-/* 发票CSS END */
+    /* 结算列表CSS */
+    .section-count {
+      margin: 0 48px;
+      padding: 20px 0;
+      overflow: hidden;
+      .money-box {
+        float: right;
+        text-align: right;
+        .title {
+          float: left;
+          width: 126px;
+          height: 30px;
+          display: block;
+          line-height: 30px;
+          color: #757575;
+        }
+        .value {
+          float: left;
+          min-width: 105px;
+          height: 30px;
+          display: block;
+          line-height: 30px;
+          color: #ff6700;
+        }
+        .total {
+          .title {
+            padding-top: 15px;
+          }
+          .value {
+            padding-top: 10px;
+          }
+        }
+        .total-price {
+          font-size: 30px;
+        }
+      }
+    }
+    /* 结算列表CSS END */
 
-/* 结算列表CSS */
-.confirmOrder .content .section-count {
-  margin: 0 48px;
-  padding: 20px 0;
-  overflow: hidden;
-}
-.confirmOrder .content .section-count .money-box {
-  float: right;
-  text-align: right;
-}
-.confirmOrder .content .section-count .money-box .title {
-  float: left;
-  width: 126px;
-  height: 30px;
-  display: block;
-  line-height: 30px;
-  color: #757575;
-}
-.confirmOrder .content .section-count .money-box .value {
-  float: left;
-  min-width: 105px;
-  height: 30px;
-  display: block;
-  line-height: 30px;
-  color: #ff6700;
-}
-.confirmOrder .content .section-count .money-box .total .title {
-  padding-top: 15px;
-}
-.confirmOrder .content .section-count .money-box .total .value {
-  padding-top: 10px;
-}
-.confirmOrder .content .section-count .money-box .total-price {
-  font-size: 30px;
-}
-/* 结算列表CSS END */
+    /* 结算导航CSS */
+    .section-bar {
+      padding: 20px 48px;
+      border-top: 2px solid #f5f5f5;
+      overflow: hidden;
+      .btn {
+        float: right;
+        .btn-base {
+          float: left;
+          margin-left: 30px;
+          width: 158px;
+          height: 38px;
+          border: 1px solid #b0b0b0;
+          font-size: 14px;
+          line-height: 38px;
+          text-align: center;
+        }
+        .btn-return {
+          color: rgba(0, 0, 0, 0.27);
+          border-color: rgba(0, 0, 0, 0.27);
+        }
+        .btn-primary {
+          background: #ff6700;
+          border-color: #ff6700;
+          color: #fff;
+        }
+      }
+    }
+    /* 结算导航CSS */
+  }
+  /* 主要内容容器CSS END */
 
-/* 结算导航CSS */
-.confirmOrder .content .section-bar {
-  padding: 20px 48px;
-  border-top: 2px solid #f5f5f5;
-  overflow: hidden;
+  .el-form-item__content {
+    position: relative;
+    .add-address-ok {
+      position: absolute;
+      right: -4px;
+      top: 0;
+    }
+  }
 }
-.confirmOrder .content .section-bar .btn {
-  float: right;
-}
-.confirmOrder .content .section-bar .btn .btn-base {
-  float: left;
-  margin-left: 30px;
-  width: 158px;
-  height: 38px;
-  border: 1px solid #b0b0b0;
-  font-size: 14px;
-  line-height: 38px;
-  text-align: center;
-}
-.confirmOrder .content .section-bar .btn .btn-return {
-  color: rgba(0, 0, 0, 0.27);
-  border-color: rgba(0, 0, 0, 0.27);
-}
-.confirmOrder .content .section-bar .btn .btn-primary {
-  background: #ff6700;
-  border-color: #ff6700;
-  color: #fff;
-}
-/* 结算导航CSS */
-
-/* 主要内容容器CSS END */
 </style>

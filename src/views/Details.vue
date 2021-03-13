@@ -1,9 +1,6 @@
 <!--
  * @Description: 商品详情页面组件
  * @Author: lihongzhi
- * @Date: 2021-01-10 18:55:44
- * @LastEditors:lihongzhi
- * @LastEditTime: 2021-01-10 21:06:11
  -->
 <template>
   <div id="details">
@@ -55,7 +52,7 @@
       <div class="details-content">
         <h1 class="details-content-name">{{ productDetails.product_name }}</h1>
         <p class="details-content-intro">{{ productDetails.product_intro }}</p>
-        <p class="details-content-store">小米自营</p>
+        <p class="details-content-store">校园自营</p>
         <div class="details-content-price">
           <span>{{ productDetails.product_selling_price }}元</span>
           <span
@@ -68,7 +65,9 @@
           >
         </div>
         <div class="details-pro-list">
-          <span class="details-pro-name">{{ productDetails.product_name }}</span>
+          <span class="details-pro-name">{{
+            productDetails.product_name
+          }}</span>
           <span class="details-pro-price">
             <span>{{ productDetails.product_selling_price }}元</span>
             <span
@@ -86,7 +85,10 @@
         </div>
         <!-- 内容区底部按钮 -->
         <div class="details-button">
-          <el-button class="details-shop-cart" :disabled="dis" @click="addShoppingCart"
+          <el-button
+            class="details-shop-cart"
+            :disabled="dis"
+            @click="addShoppingCart"
             >加入购物车</el-button
           >
           <el-button class="details-like" @click="addCollect">喜欢</el-button>
@@ -94,8 +96,8 @@
         <!-- 内容区底部按钮END -->
         <div class="details-pro-policy">
           <ul>
-            <li><i class="el-icon-circle-check"></i> 小米自营</li>
-            <li><i class="el-icon-circle-check"></i> 小米发货</li>
+            <li><i class="el-icon-circle-check"></i> 校园自营</li>
+            <li><i class="el-icon-circle-check"></i> 快速发货</li>
             <li><i class="el-icon-circle-check"></i> 7天无理由退货</li>
             <li><i class="el-icon-circle-check"></i> 7天价格保护</li>
           </ul>
@@ -126,55 +128,8 @@ export default {
   watch: {
     // 监听商品id的变化，请求后端获取商品数据
     productID: function (val) {
-      // this.getDetails(val);
-      // this.getDetailsPicture(val);
-      console.log(val);
-      //lihongzhi
-      this.productDetails = {
-        category_id: 1,
-        product_id: 1,
-        product_intro:
-          "120Hz高帧率流速屏/ 索尼6400万前后六摄 / 6.67'小孔径全面屏 / 最高可选8GB+256GB大存储 / 高通骁龙730G处理器 / 3D四曲面玻璃机身 / 4500mAh+27W快充 / 多功能NFC",
-        product_name: "Redmi K30",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 2000,
-        product_sales: 0,
-        product_selling_price: 1599,
-        product_title: "120Hz流速屏，全速热爱",
-      };
-      this.productPicture = [
-        {
-          id: 1,
-          intro: null,
-          product_id: 1,
-          product_picture: "public/imgs/phone/picture/Redmi-k30-1.png",
-        },
-        {
-          id: 2,
-          intro: null,
-          product_id: 1,
-          product_picture: "public/imgs/phone/picture/Redmi-k30-2.png",
-        },
-        {
-          id: 3,
-          intro: null,
-          product_id: 1,
-          product_picture: "public/imgs/phone/picture/Redmi-k30-3.png",
-        },
-        {
-          id: 4,
-          intro: null,
-          product_id: 1,
-          product_picture: "public/imgs/phone/picture/Redmi-k30-4.png",
-        },
-        {
-          id: 5,
-          intro: null,
-          product_id: 1,
-          product_picture: "public/imgs/phone/picture/Redmi-k30-5.png",
-        },
-      ];
+      this.getDetails(val);
+      this.getDetailsPicture(val);
     },
   },
   methods: {
@@ -182,7 +137,7 @@ export default {
     // 获取商品详细信息
     getDetails(val) {
       this.$axios
-        .post("/api/product/getDetails", {
+        .post("/product/getDetails", {
           productID: val,
         })
         .then((res) => {
@@ -195,7 +150,7 @@ export default {
     // 获取商品图片
     getDetailsPicture(val) {
       this.$axios
-        .post("/api/product/getDetailsPicture", {
+        .post("/product/getDetailsPicture", {
           productID: val,
         })
         .then((res) => {
@@ -212,10 +167,19 @@ export default {
         this.$store.dispatch("setShowLogin", true);
         return;
       }
+      if (this.productDetails.from_user === this.$store.getters.getUser.uuid) {
+        this.notifyError("不能加购自己上架的商品~");
+        return;
+      }
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
+  
       this.$axios
-        .post("/api/user/shoppingCart/addShoppingCart", {
-          user_id: this.$store.getters.getUser.user_id,
+        .post("/users/shoppingCart/addShoppingCart", {
+          user_id: this.$store.getters.getUser.uuid,
           product_id: this.productID,
+          from_user:this.productDetails.from_user
         })
         .then((res) => {
           switch (res.data.code) {
@@ -248,9 +212,12 @@ export default {
         this.$store.dispatch("setShowLogin", true);
         return;
       }
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
       this.$axios
-        .post("/api/user/collect/addCollect", {
-          user_id: this.$store.getters.getUser.user_id,
+        .post("/users/collect/addCollect", {
+          user_id: this.$store.getters.getUser.uuid,
           product_id: this.productID,
         })
         .then((res) => {
@@ -270,7 +237,6 @@ export default {
 };
 </script>
 <style lang='less'>
-
 #details {
   /* 头部CSS */
   .details-page-header {
@@ -295,7 +261,7 @@ export default {
       .details-page-list {
         height: 64px;
         float: right;
-        li{
+        li {
           float: left;
           margin-left: 20px;
           a {
@@ -392,7 +358,7 @@ export default {
           background-color: #ff6700;
           &:hover {
             background-color: #f25807;
-          }   
+          }
         }
         .details-like {
           width: 260px;
@@ -414,7 +380,7 @@ export default {
   }
 }
 .el-carousel .el-carousel__indicator .el-carousel__button {
-  background-color: rgba(163, 163, 163, 0.8); 
+  background-color: rgba(163, 163, 163, 0.8);
 }
 /* 主要内容CSS END */
 </style>

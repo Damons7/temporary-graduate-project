@@ -5,9 +5,19 @@
 <template>
   <div id="login">
     <el-dialog title="登录" width="300px" center :visible.sync="isLogin">
-      <el-form :model="LoginUser" :rules="rules" status-icon ref="ruleForm" class="demo-ruleForm">
+      <el-form
+        :model="LoginUser"
+        :rules="rules"
+        status-icon
+        ref="ruleForm"
+        class="demo-ruleForm"
+      >
         <el-form-item prop="email">
-          <el-input prefix-icon="el-icon-user-solid" placeholder="请输入邮箱" v-model="LoginUser.email"></el-input>
+          <el-input
+            prefix-icon="el-icon-user-solid"
+            placeholder="请输入邮箱"
+            v-model="LoginUser.email"
+          ></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input
@@ -18,7 +28,13 @@
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button size="medium" type="primary" @click="Login" style="width:100%;">登录</el-button>
+          <el-button
+            size="medium"
+            type="primary"
+            @click="Login"
+            style="width: 100%"
+            >登录</el-button
+          >
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -55,21 +71,19 @@ export default {
         this.$refs.ruleForm.validateField("checkPass");
         return callback();
       } else {
-        return callback(
-          new Error("密码长度6-16之间,允许字母数字和下划线")
-        );
+        return callback(new Error("密码长度6-16之间,允许字母数字和下划线"));
       }
     };
     return {
       LoginUser: {
         email: "",
-        password: ""
+        password: "",
       },
       // 用户信息校验规则,validator(校验方法),trigger(触发方式),blur为在组件 Input 失去焦点时触发
       rules: {
         email: [{ validator: validateEmail, trigger: "blur" }],
-        password: [{ validator: validatePassword, trigger: "blur" }]
-      }
+        password: [{ validator: validatePassword, trigger: "blur" }],
+      },
     };
   },
   computed: {
@@ -81,22 +95,22 @@ export default {
       set(val) {
         this.$refs["ruleForm"].resetFields();
         this.setShowLogin(val);
-      }
-    }
+      },
+    },
   },
   methods: {
     ...mapActions(["setUser", "setShowLogin"]),
     Login() {
       // 通过element自定义表单校验规则，校验用户输入的用户信息
-      this.$refs["ruleForm"].validate(valid => {
+      this.$refs["ruleForm"].validate((valid) => {
         //如果通过校验开始登录
         if (valid) {
           this.$axios
             .post("/users/login", {
               email: this.LoginUser.email,
-              password: this.LoginUser.password
+              password: this.LoginUser.password,
             })
-            .then(res => {
+            .then((res) => {
               // 0代表登录成功，其他的均为失败
               if (res.data.code === 0) {
                 // 隐藏登录组件
@@ -115,15 +129,15 @@ export default {
                 this.notifyError(res.data.msg);
               }
             })
-            .catch(err => {
+            .catch((err) => {
               return Promise.reject(err);
             });
         } else {
           return false;
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 <style>

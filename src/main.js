@@ -98,6 +98,9 @@ import Login from './components/Login';
 Vue.component(Login.name, Login);
 import Register from './components/Register';
 Vue.component(Register.name, Register);
+//test
+import Form from './components/Form';
+Vue.component(Form.name, Form);
 
 Vue.config.productionTip = false;
 

@@ -121,13 +121,13 @@
         </div>
         <!-- 娱乐商品展示区域END -->
 
-        <!-- test -->
+        <!-- 其他宝藏 -->
         <div class="amusement" id="promo-menu">
           <div class="myTest">
             <img src="https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/59e8fc8ba9718c266882719fb4bbcedd.jpg?thumb=1&w=1226&h=120&f=webp&q=90" alt="">
           </div>
           <div class="box-head">
-            <div class="box-title">test</div>
+            <div class="box-title">其他宝藏</div>
             <div class="box-more" id="box-more">
               <Tabs :val="3" @fromChild="getChildMsg2">
                 <template v-slot:1>
@@ -249,108 +249,17 @@ export default {
           "https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/b5ed5762d5298d772f55eae0915ed983.jpg?w=2452&h=920",
       },
     ];
-    this.bookList = [
-      {
-        category_id: 1,
-        product_id: 1,
-        product_intro:
-          "120Hz高帧率流速屏/ 索尼6400万前后六摄 / 6.67'小孔径全面屏 / 最高可选8GB+256GB大存储 / 高通骁龙730G处理器 / 3D四曲面玻璃机身 / 4500mAh+27W快充 / 多功能NFC",
-        product_name: "Redmi K30",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 2000,
-        product_sales: 0,
-        product_selling_price: 2000,
-        product_title: "120Hz流速屏，全速热爱",
-      },
-      {
-        category_id: 1,
-        product_id: 2,
-        product_intro:
-          "双模5G / 三路并发 / 高通骁龙765G / 7nm 5G低功耗处理器 / 120Hz高帧率流速屏 / 6.67'小孔径全面屏 / 索尼6400万前后六摄 / 最高可选8GB+256GB大存储 / 4500mAh+30W快充 / 3D四曲面玻璃机身 / 多功能NF",
-        product_name: "Redmi K30 5G",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 3000,
-        product_sales: 0,
-        product_selling_price: 3000,
-        product_title: "双模5G,120Hz流速屏",
-      },
-      {
-        category_id: 1,
-        product_id: 3,
-        product_intro:
-          "双模5G / 三路并发 / 高通骁龙765G / 7nm 5G低功耗处理器 / 120Hz高帧率流速屏 / 6.67'小孔径全面屏 / 索尼6400万前后六摄 / 最高可选8GB+256GB大存储 / 4500mAh+30W快充 / 3D四曲面玻璃机身 / 多功能NF",
-        product_name: "Redmi K30 5G3",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 3555,
-        product_sales: 0,
-        product_selling_price: 1599,
-        product_title: "双模5G,120Hz流速屏",
-      },
-      {
-        category_id: 1,
-        product_id: 4,
-        product_intro:
-          "双模5G / 三路并发 / 高通骁龙765G / 7nm 5G低功耗处理器 / 120Hz高帧率流速屏 / 6.67'小孔径全面屏 / 索尼6400万前后六摄 / 最高可选8GB+256GB大存储 / 4500mAh+30W快充 / 3D四曲面玻璃机身 / 多功能NF",
-        product_name: "Redmi K30 5G4",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 4000,
-        product_sales: 0,
-        product_selling_price: 1899,
-        product_title: "双模5G,120Hz流速屏",
-      },
-      {
-        category_id: 1,
-        product_id: 5,
-        product_intro:
-          "双模5G / 三路并发 / 高通骁龙765G / 7nm 5G低功耗处理器 / 120Hz高帧率流速屏 / 6.67'小孔径全面屏 / 索尼6400万前后六摄 / 最高可选8GB+256GB大存储 / 4500mAh+30W快充 / 3D四曲面玻璃机身 / 多功能NF",
-        product_name: "Redmi K30 5G5",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 4500,
-        product_sales: 0,
-        product_selling_price: 4000,
-        product_title: "双模5G,120Hz流速屏",
-      },
-      {
-        category_id: 1,
-        product_id: 6,
-        product_intro:
-          "双模5G / 三路并发 / 高通骁龙765G / 7nm 5G低功耗处理器 / 120Hz高帧率流速屏 / 6.67'小孔径全面屏 / 索尼6400万前后六摄 / 最高可选8GB+256GB大存储 / 4500mAh+30W快充 / 3D四曲面玻璃机身 / 多功能NF",
-        product_name: "Redmi K30 5G6",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 4899,
-        product_sales: 0,
-        product_selling_price: 4000,
-        product_title: "双模5G,120Hz流速屏",
-      },
-      {
-        category_id: 1,
-        product_id: 7,
-        product_intro:
-          "双模5G / 三路并发 / 高通骁龙765G / 7nm 5G低功耗处理器 / 120Hz高帧率流速屏 / 6.67'小孔径全面屏 / 索尼6400万前后六摄 / 最高可选8GB+256GB大存储 / 4500mAh+30W快充 / 3D四曲面玻璃机身 / 多功能NF",
-        product_name: "Redmi K30 5G7",
-        product_num: 10,
-        product_picture: "public/imgs/phone/Redmi-k30.png",
-        product_price: 5999,
-        product_sales: 0,
-        product_selling_price: 5999,
-        product_title: "双模5G,120Hz流速屏",
-      },
-    ];
+  
     this.miTvList = this.bookList; // 小米电视商品列表
-    this.applianceList = this.bookList; // 家电商品列表
+    // this.applianceList = this.bookList; // 家电商品列表
     this.applianceHotList = this.bookList; //热门家电商品列表
     this.amusementList = this.bookList; //配件商品列表
     this.amusementHotList = this.bookList; //热门配件商品列表
     this.protectingShellList = this.bookList; // 保护套商品列表
     this.chargerList = this.bookList; //充电器商品列表
 
-    // this.getPromo("书籍", "bookList");
+    this.getPromo("书籍", "bookList");
+    this.getPromo("电子设备", "applianceList");
   },
   // created() {
   //   // 获取轮播图数据

@@ -1,9 +1,6 @@
 /*
  * @Description: 购物车状态模块
- * @Author: hai-27
- * @Date: 2020-02-21 18:40:41
- * @LastEditors: hai-27
- * @LastEditTime: 2020-03-07 20:38:55
+ * @Author: 李鸿智
  */
 export default {
   state: {
@@ -97,6 +94,7 @@ export default {
       // 更新购物车
       // 可更新商品数量和是否勾选
       // 用于购物车点击勾选及加减商品数量
+      
       if (payload.prop == "num") {
         // 判断效果的商品数量是否大于限购数量或小于1
         if (state.shoppingCart[payload.key].maxNum < payload.val) {

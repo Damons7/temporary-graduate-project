@@ -10,8 +10,12 @@
           <el-button type="text">
             <router-link to="/collect" tag="div">我的收藏</router-link>
           </el-button>
+
           <el-button type="text">
-            <router-link to="/shoppingCart" tag="div">购物车</router-link>
+            <router-link to="/shoppingCart" tag="div">
+              <i class="el-icon-shopping-cart-full"></i> 购物车
+              <span class="num">({{ getNum }})</span>
+            </router-link>
           </el-button>
         </div>
 
@@ -22,19 +26,26 @@
         </div>
         <div v-else class="top-nav">
           <span class="top-nav-wecome">欢迎</span>
-          <el-popover placement="top" width="180" v-model="visible">
+          <router-link to="/user" tag="div" class="top-nav-user">
+            {{ this.$store.getters.getUser.userName }}
+          </router-link>
+
+          <el-popover
+            placement="top"
+            width="180"
+            v-model="visible"
+            class="top-nav-esc"
+          >
             <p>确定退出登录吗？</p>
             <div style="text-align: right; margin: 10px 0 0">
-              <el-button size="mini" type="text" @click="visible = false"
-                >取消</el-button
-              >
               <el-button type="primary" size="mini" @click="logout"
                 >确定</el-button
               >
+              <el-button size="mini" type="default" @click="visible = false"
+                >取消</el-button
+              >
             </div>
-            <el-button type="text" slot="reference">{{
-              this.$store.getters.getUser.userName
-            }}</el-button>
+            <el-button type="text" slot="reference">退出</el-button>
           </el-popover>
         </div>
       </div>
@@ -57,8 +68,8 @@
           </div>
           <el-menu-item index="/">首页</el-menu-item>
           <el-menu-item index="/goods">全部商品</el-menu-item>
+          <el-menu-item index="/sale">我上架的</el-menu-item>
           <el-menu-item index="/about">关于我们</el-menu-item>
-
           <div class="header-search">
             <el-input
               placeholder="请输入搜索内容"
@@ -158,9 +169,13 @@ export default {
         this.setShoppingCart([]);
       } else {
         // 用户已经登录,获取该用户的购物车信息
+        this.$axios.defaults.headers.common[
+          "Authorization"
+        ] = this.getUser.token;
+
         this.$axios
-          .post("/user/shoppingCart/getShoppingCart", {
-            user_id: val.user_id,
+          .post("/users/shoppingCart/getShoppingCart", {
+            user_id: val.uuid,
           })
           .then((res) => {
             if (res.data.code === "001") {
@@ -215,7 +230,7 @@ export default {
   margin: 0;
   border: 0;
   list-style: none;
-  box-sizing: border-box;
+  // box-sizing: border-box;
 }
 #app .el-header {
   padding: 0;
@@ -250,9 +265,21 @@ a:hover {
       line-height: 14px;
       margin: 0 4px;
     }
-
-    .el-button {
+    .top-nav-esc {
+      margin-left: 20px;
+    }
+    .top-nav-user {
+      cursor: pointer;
       color: #b0b0b0;
+      font-size: 14px;
+      &:hover {
+        color: #fff;
+      }
+    }
+    .el-button {
+      cursor: pointer;
+      color: #b0b0b0;
+      font-size: 14px;
       &:hover {
         color: #fff;
       }
