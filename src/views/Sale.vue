@@ -11,7 +11,7 @@
         我上架的
         <router-link to="/sale/AddSale">
           <div class="sale-add">
-            继续上架
+            上架新品
             <i class="el-icon-circle-plus-outline" style="color: #ff6700"></i>
           </div>
         </router-link>
@@ -46,68 +46,75 @@
         待发货
       </div>
       <!-- 待发货订单主要内容 -->
-      <div
-        class="ToBeDelivered-content"
-        v-for="(item,index) in delivery"
-        :key="index+item[0].order_id+item[0].product_id"
-      >
-        <ul>
-          <!-- 我的订单表头 -->
-          <li class="order-info">
-            <div class="order-id">订单编号: {{ item[0].order_id }}</div>
-            <div class="order-time">
-               <router-link
-                :to="{
-                  path: '/order/orderDetails',
-                  query: { delivery: item[0].order_state },
-                }"
-              >
-              <el-button
-                >订单详情</el-button
-              >
-               </router-link>
-                <el-button @click="deliveryFun(item[0].order_id, item[index].product_id)"
-                >去发货</el-button
-              >
-            </div>
-          </li>
-          <li class="header">
-            <div class="pro-img"></div>
-            <div class="pro-name">商品名称</div>
-            <div class="pro-price">单价</div>
-            <div class="pro-num">数量</div>
-            <div class="pro-total">小计</div>
-          </li>
-          <!-- 我的订单表头END -->
-          <!-- 订单列表 -->
-          <li class="product-list" v-for="item2 in item" :key="index+item2.order_id+item2.product_id">
-            <div class="pro-img">
-              <router-link
-                :to="{
-                  path: '/goods/details',
-                  query: { productID: item2.product_id },
-                }"
-              >
-                <img :src="item2.product_img" />
-              </router-link>
-            </div>
-            <div class="pro-name">
-              <router-link
-                :to="{
-                  path: '/goods/details',
-                  query: { productID: item2.product_id },
-                }"
-                >{{ item2.product_name }}</router-link
-              >
-            </div>
-            <div class="pro-price">{{ item2.product_price }}元</div>
-            <div class="pro-num">{{ item2.product_num }}</div>
-            <div class="pro-total pro-total-in">
-              {{ item2.product_num * item2.product_price }}元
-            </div>
-          </li>
-        </ul>
+
+      <div v-if="delivery.length">
+        <div
+          class="ToBeDelivered-content"
+          v-for="(item, index) in delivery"
+          :key="index + item[0].order_id + item[0].product_id"
+        >
+          <ul>
+            <!-- 我的订单表头 -->
+            <li class="order-info">
+              <div class="order-id">订单编号: {{ item[0].order_id }}</div>
+              <div class="order-time">
+                <router-link
+                  :to="{
+                    path: '/order/orderDetails',
+                    query: { delivery: item[0].order_state },
+                  }"
+                >
+                  <el-button>订单详情</el-button>
+                </router-link>
+                <el-button
+                  @click="deliveryFun(item[0].order_id, item[index].product_id)"
+                  >去发货</el-button
+                >
+              </div>
+            </li>
+            <li class="header">
+              <div class="pro-img"></div>
+              <div class="pro-name">商品名称</div>
+              <div class="pro-price">单价</div>
+              <div class="pro-num">数量</div>
+              <div class="pro-total">小计</div>
+            </li>
+            <!-- 我的订单表头END -->
+            <!-- 订单列表 -->
+            <li
+              class="product-list"
+              v-for="item2 in item"
+              :key="index + item2.order_id + item2.product_id"
+            >
+              <div class="pro-img">
+                <router-link
+                  :to="{
+                    path: '/goods/details',
+                    query: { productID: item2.product_id },
+                  }"
+                >
+                  <img :src="item2.product_img" />
+                </router-link>
+              </div>
+              <div class="pro-name">
+                <router-link
+                  :to="{
+                    path: '/goods/details',
+                    query: { productID: item2.product_id },
+                  }"
+                  >{{ item2.product_name }}</router-link
+                >
+              </div>
+              <div class="pro-price">{{ item2.product_price }}元</div>
+              <div class="pro-num">{{ item2.product_num }}</div>
+              <div class="pro-total pro-total-in">
+                {{ item2.product_num * item2.product_price }}元
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
+      <div v-else class="notList">暂无待发货</div>
       <!-- 待发货订单主要内容END -->
       <!-- 待发货 END-->
 
@@ -117,53 +124,60 @@
         发货中
       </div>
       <!-- 发货中订单主要内容 -->
-      <div
-        class="ToBeDelivered-content"
-        v-for="item in delivering"
-        :key="index+item[0].order_id+item[0].product_id"
-      >
-        <ul>
-          <!-- 我的订单表头 -->
-          <li class="order-info">
-            <div class="order-id">订单编号: {{ item[0].order_id }}</div>
-          </li>
-          <li class="header">
-            <div class="pro-img"></div>
-            <div class="pro-name">商品名称</div>
-            <div class="pro-price">单价</div>
-            <div class="pro-num">数量</div>
-            <div class="pro-total">小计</div>
-          </li>
-          <!-- 我的订单表头END -->
-          <!-- 订单列表 -->
-          <li class="product-list" v-for="(item2,index) in item" :key="index+item2.order_id+item2.product_id">
-            <div class="pro-img">
-              <router-link
-                :to="{
-                  path: '/goods/details',
-                  query: { productID: item2.product_id },
-                }"
-              >
-                <img :src="item2.product_img" />
-              </router-link>
-            </div>
-            <div class="pro-name">
-              <router-link
-                :to="{
-                  path: '/goods/details',
-                  query: { productID: item2.product_id },
-                }"
-                >{{ item2.product_name }}</router-link
-              >
-            </div>
-            <div class="pro-price">{{ item2.product_price }}元</div>
-            <div class="pro-num">{{ item2.product_num }}</div>
-            <div class="pro-total pro-total-in">
-              {{ item2.product_num * item2.product_price }}元
-            </div>
-          </li>
-        </ul>
+      <div v-if="delivering.length">
+        <div
+          class="ToBeDelivered-content"
+          v-for="item in delivering"
+          :key="index + item[0].order_id + item[0].product_id"
+        >
+          <ul>
+            <!-- 我的订单表头 -->
+            <li class="order-info">
+              <div class="order-id">订单编号: {{ item[0].order_id }}</div>
+            </li>
+            <li class="header">
+              <div class="pro-img"></div>
+              <div class="pro-name">商品名称</div>
+              <div class="pro-price">单价</div>
+              <div class="pro-num">数量</div>
+              <div class="pro-total">小计</div>
+            </li>
+            <!-- 我的订单表头END -->
+            <!-- 订单列表 -->
+            <li
+              class="product-list"
+              v-for="(item2, index) in item"
+              :key="index + item2.order_id + item2.product_id"
+            >
+              <div class="pro-img">
+                <router-link
+                  :to="{
+                    path: '/goods/details',
+                    query: { productID: item2.product_id },
+                  }"
+                >
+                  <img :src="item2.product_img" />
+                </router-link>
+              </div>
+              <div class="pro-name">
+                <router-link
+                  :to="{
+                    path: '/goods/details',
+                    query: { productID: item2.product_id },
+                  }"
+                  >{{ item2.product_name }}</router-link
+                >
+              </div>
+              <div class="pro-price">{{ item2.product_price }}元</div>
+              <div class="pro-num">{{ item2.product_num }}</div>
+              <div class="pro-total pro-total-in">
+                {{ item2.product_num * item2.product_price }}元
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
+      <div v-else class="notList">暂无发货中</div>
       <!-- 发货中订单主要内容END -->
       <!-- 发货中 END-->
     </div>
@@ -172,7 +186,6 @@
 </template>
 <script>
 export default {
-
   data() {
     return {
       item: [{ A: 1 }],
@@ -229,8 +242,6 @@ export default {
           this.delivery = delivery;
           this.delivering = delivering;
           this.delivered = delivered;
-        } else {
-          this.notifyError(res.data.msg);
         }
       })
       .catch((err) => {
@@ -250,7 +261,6 @@ export default {
         })
         .then((res) => {
           if (res.data.code === "001") {
-            // this.saleList = res.data.collectList;
             this.notifySuccess(res.data.msg);
           } else {
             this.notifyError(res.data.msg);
@@ -277,6 +287,7 @@ export default {
       line-height: 58px;
       font-size: 28px;
       .sale-add {
+        color:#666;
         font-size: 24px;
         float: right;
       }
@@ -287,6 +298,12 @@ export default {
     width: 1225px;
     margin: 0 auto;
 
+    .notList {
+      margin-left: 100px;
+      height: 40px;
+      line-height: 40px;
+      color: #999;
+    }
     .sale-state {
       height: 60px;
       line-height: 60px;
@@ -319,7 +336,7 @@ export default {
           }
           .order-time {
             float: right;
-            .el-button{
+            .el-button {
               border: transparent;
             }
           }

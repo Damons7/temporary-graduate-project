@@ -129,7 +129,6 @@ export default {
         })
         .then((res) => {
           this.ordersList = res.data.orders;
-          console.log(this.ordersList, "ordersList");
         })
         .catch((err) => {
           return Promise.reject(err);
