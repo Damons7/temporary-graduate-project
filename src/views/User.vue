@@ -40,32 +40,44 @@
       <!-- 头像 -->
       <div class="userInfo-section">
         <p class="title">头像 :</p>
-
-        <el-form enctype="multipart/form-data">
-          <el-form-item>
-            <el-upload
-              ref="upload"
-              action=""
-              list-type="picture-card"
-              :class="{ disabled: uploadDisabled }"
-              :limit="1"
-              :on-change="handleChange"
-              :on-remove="handleRemove"
-              :show-file-list="true"
-              :auto-upload="false"
-              :on-success="handleAvatarSuccess"
-              :before-upload="beforeAvatarUpload"
-            >
-              <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-            </el-upload>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="submitForm" :loading="isUploadPic"
-              >保存</el-button
-            >
-          </el-form-item>
-        </el-form>
+        <div class="upload-img">
+          <img
+            v-if="!uploadDisabled"
+            :src="userData.avatar"
+            alt=""
+            class="user-img"
+          />
+          <el-form
+            enctype="multipart/form-data"
+            :class="{ edioShowImg: uploadDisabled, edioImg: !uploadDisabled }"
+          >
+            <el-form-item>
+              <el-upload
+                ref="upload"
+                action=""
+                list-type="picture-card"
+                :class="{ disabled: uploadDisabled }"
+                :limit="1"
+                :on-change="handleChange"
+                :on-remove="handleRemove"
+                :show-file-list="true"
+                :auto-upload="false"
+                :before-upload="beforeAvatarUpload"
+              >
+                <i class="el-icon-plus avatar-uploader-icon"></i>
+              </el-upload>
+            </el-form-item>
+          </el-form>
+        </div>
+        <el-button
+          v-if="uploadDisabled"
+          type="default"
+          @click="submitForm"
+          :loading="isUploadPic"
+          size="small"
+          class="upload-btn"
+          >上传</el-button
+        >
       </div>
 
       <!-- 姓名 -->
@@ -266,10 +278,8 @@ export default {
       genderType: "",
 
       //test
-      dialogVisible: false,
       isUploadPic: false,
       uploadDisabled: false,
-      imageUrl: "",
     };
   },
   methods: {
@@ -280,14 +290,21 @@ export default {
       const formData = new FormData();
       //上传图片
       const file = this.$refs.upload.uploadFiles[0];
-      formData.append("file", file.raw);
+      const suffix = file.raw.name.split(".").pop();
+      const reName = this.$store.getters.getUser.uuid + '.' + suffix;
+      const reFile = new File([file.raw], reName, {
+        type: file.raw.type,
+      });
+      formData.append("file", reFile);
       formData.append("user_id", this.$store.getters.getUser.uuid);
       this.$axios
         .post("/users/uploadAvatar", formData)
         .then((res) => {
           if (res.data.code === "001") {
-            console.log("上传图片", res.data);
             this.notifySucceed(res.data.msg);
+            this.uploadDisabled = false;
+            this.userData.avatar = this.$refs.upload.uploadFiles[0].url;
+            this.$refs.upload.uploadFiles.pop();
           } else {
             this.notifyError(res.data.msg);
           }
@@ -296,12 +313,12 @@ export default {
           return Promise.reject(err);
         });
     },
-    //点击 按钮 弹窗上传
-    handleForUpload() {
-      this.dialogVisible = true;
-    },
     //改变图片钩子
     handleChange(file, fileList) {
+      if (!this.beforeAvatarUpload(file.raw)) {
+        this.$refs.upload.uploadFiles.pop();
+        return;
+      }
       this.file = file.raw;
       this.fileName = file.name;
       if (fileList.length >= 1) {
@@ -310,14 +327,9 @@ export default {
     },
     //删除图片钩子
     handleRemove(file) {
-      console.log(file);
-      //imgDelete.post({pic_name : file.response.pic_name}).then();
+      console.log(file, "删除");
       this.uploadDisabled = false;
-    },
-    handleAvatarSuccess(res, file) {
-      this.$refs.uploadPic.clearFiles();
-      this.imageUrl = res.data;
-      console.log(file);
+
     },
     //限制上传图片标准
     beforeAvatarUpload(file) {
@@ -326,10 +338,10 @@ export default {
       const isLt2M = file.size / 1024 / 1024 < 2;
 
       if (!isJPG && !isPNG) {
-        this.$message.error("File type only support JPG, PNG!");
+        this.notifyError("仅支持 JPG, PNG 格式!");
       }
       if (!isLt2M) {
-        this.$message.error("File size must lower than 2MB!");
+        this.notifyError("图片大小必须小于2MB!");
       }
       return (isJPG || isPNG) && isLt2M;
     },
@@ -547,16 +559,33 @@ export default {
       }
       .upload-img {
         position: relative;
+        width: 148px;
+        height: 148px;
         .user-img {
+          width: 100%;
+          height: 100%;
+        }
+        .edioImg {
           position: absolute;
           width: 100%;
           height: 100%;
           top: 0;
           left: 0;
+          opacity: 0;
           &:hover {
-            opacity: 0.5;
+            opacity: 1;
           }
         }
+        .edioShowImg {
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+      .upload-btn {
+        float: left;
+        margin: 110px 0 0 30px;
+        height: 40px;
       }
       .shipment {
         float: left;

@@ -259,6 +259,7 @@ export default {
     this.chargerList = this.bookList; //充电器商品列表
 
     this.getPromo("书籍", "bookList");
+     this.getPromo("娱乐", "amusementList");
     this.getPromo("电子设备", "applianceList");
   },
   // created() {

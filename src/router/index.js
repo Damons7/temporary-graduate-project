@@ -50,6 +50,12 @@ const routes = [
     name: 'AddSale',
     component: () => import('../views/AddSale.vue')
   },
+  //更新我上架的
+  {
+    path: '/sale/updateSale',
+    name: 'UpdateSale',
+    component: () => import('../views/UpdateSale.vue')
+  },
   //关于我们
   {
     path: '/about',

@@ -28,7 +28,7 @@
       </div>
 
       <div class="goods-list" v-if="saleList.length > 0">
-        <Item :list="saleList" :isDelete="true"></Item>
+        <Item :list="saleList" :isDelete="false" :isUpdate="true"></Item>
       </div>
       <!-- 上架列表为空的时候显示的内容 -->
       <div v-else class="sale-empty">
@@ -199,17 +199,17 @@ export default {
     };
   },
   activated() {
-    // 获取收藏数据
+    // 获取数据
     this.$axios.defaults.headers.common[
       "Authorization"
     ] = this.$store.getters.getUser.token;
     this.$axios
-      .post("/users/collect/getCollect", {
-        user_id: this.$store.getters.getUser.uuid,
+      .post("/product/getAddProduct", {
+        from_user: this.$store.getters.getUser.uuid,
       })
       .then((res) => {
         if (res.data.code === "001") {
-          this.saleList = res.data.collectList;
+          this.saleList = res.data.saleList;
         }
       })
       .catch((err) => {

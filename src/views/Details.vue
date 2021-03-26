@@ -29,22 +29,15 @@
     <div class="details-main">
       <!-- 左侧商品轮播图 -->
       <div class="details-swiper">
-        <el-carousel height="560px" v-if="productPicture.length > 1">
+        <el-carousel height="560px" v-if="productPicture.length">
           <el-carousel-item v-for="item in productPicture" :key="item.id">
             <img
               style="height: 560px"
-              :src="$target + item.product_picture"
-              :alt="item.intro"
+              :src="$target + item"
+              alt="加载失败"
             />
           </el-carousel-item>
         </el-carousel>
-        <div v-if="productPicture.length == 1">
-          <img
-            style="height: 560px"
-            :src="$target + productPicture[0].product_picture"
-            :alt="productPicture[0].intro"
-          />
-        </div>
       </div>
       <!-- 左侧商品轮播图END -->
 
@@ -154,7 +147,7 @@ export default {
           productID: val,
         })
         .then((res) => {
-          this.productPicture = res.data.ProductPicture;
+          this.productPicture = res.data.ProductPicture.product_picture;
         })
         .catch((err) => {
           return Promise.reject(err);

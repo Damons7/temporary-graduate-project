@@ -27,7 +27,7 @@
         </el-popover>
         <router-link
           :to="{
-            path: '/goods/details',
+            path: `${isUpdate ? routerToUpdate : routerToDetail}`,
             query: { productID: item.product_id },
           }"
         >
@@ -60,9 +60,11 @@ export default {
   name: "Item",
   // list为父组件传过来的商品列表
   // isMore为是否显示“浏览更多”
-  props: ["list", "isMore", "isDelete"],
+  props: ["list", "isMore", "isDelete", "isUpdate"],
   data() {
     return {
+      routerToDetail: "/goods/details",
+      routerToUpdate: "/sale/updateSale",
       visible: false,
     };
   },

@@ -1,5 +1,5 @@
 <!--
- * @Description: 添加上架商品
+ * @Description: 更新上架商品
  * @Author: 李鸿智
  -->
 <template>
@@ -10,7 +10,7 @@
         <p>
           <i class="el-icon-circle-plus-outline"></i>
         </p>
-        <p>添加上架商品</p>
+        <p>更新上架商品</p>
         <router-link to></router-link>
       </div>
     </div>
@@ -35,8 +35,6 @@
             type="number"
             v-model="productForm.num"
             placeholder="请输入商品数量"
-            min="1"
-            max="9999"
           ></el-input>
         </div>
       </div>
@@ -45,12 +43,9 @@
         <p class="title">商品价格 :</p>
         <div class="sale-infor">
           <el-input
-            @input="checkToFixed"
             type="number"
             v-model="productForm.price"
             placeholder="请输入商品价格"
-            min="1"
-            max="1000000"
           >
             <template slot="prepend">￥</template>
           </el-input>
@@ -58,12 +53,9 @@
         <p class="title">商品折后价 :</p>
         <div class="sale-infor">
           <el-input
-            @input="checkToFixed2"
             type="number"
             v-model="productForm.selling_price"
             placeholder="请输入商品折后价"
-            min="1"
-            max="1000000"
           >
             <template slot="prepend">￥</template></el-input
           >
@@ -93,7 +85,7 @@
             placeholder="请输入商品标题"
             class="sale-inforLong2"
             v-model="productForm.title"
-            maxlength="30"
+            maxlength="50"
             minlength="4"
           ></el-input>
         </div>
@@ -107,7 +99,7 @@
             placeholder="请输入商品介绍"
             class="sale-inforLong2"
             v-model="productForm.intro"
-            maxlength="300"
+            maxlength="40"
             minlength="4"
           ></el-input>
         </div>
@@ -142,13 +134,14 @@
               :show-file-list="true"
               :auto-upload="false"
               :before-upload="beforeAvatarUpload"
+              :file-list="fileList"
             >
               <i class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
           </el-form-item>
         </el-form>
       </div>
-
+      <el-button @click="test">test</el-button>
       <!-- 上架确认 -->
       <div class="section-bar">
         <div class="btn">
@@ -156,8 +149,8 @@
           <a
             href="javascript:void(0);"
             class="btn-base btn-primary"
-            @click="submitForm"
-            >上架</a
+            @click="submitForm2"
+            >更新</a
           >
         </div>
       </div>
@@ -168,14 +161,17 @@
 </template>
 <script>
 export default {
-  name: "AddSale",
+  name: "UpdateSale",
   data() {
     return {
+      fileList: [],
+      productID: "",
       productForm: {
+        product_id: "",
         name: "",
         num: 1,
-        price: "",
-        selling_price: "",
+        price: 0,
+        selling_price: 0,
         intro: "",
         title: "",
         saleType: "", //商品类型
@@ -215,24 +211,28 @@ export default {
       uploadDisabled: false,
     };
   },
-  methods: {
-    //价格小数超过两位时保留两位小数,第一个写小数点时自动补全0
-    checkToFixed() {
-      const price = this.productForm.price.replace(/^\./, "0.");
-      this.productForm.price = price;
-      const tofixed = price.match(/((\d*)\.\d{2})\d*/);
-      if (tofixed) {
-        this.productForm.price = tofixed[1];
-      }
+  activated() {
+    if (this.$route.query.productID != undefined) {
+      this.productID = this.$route.query.productID;
+    }
+  },
+  watch: {
+    // 监听商品id的变化，请求后端获取商品数据
+    productID: function (val) {
+      val && this.getProduct(val);
+      val && this.getDetailsPicture(val);
     },
-    //价格小数超过两位时保留两位小数,第一个写小数点时自动补全0
-    checkToFixed2() {
-      const selling_price = this.productForm.selling_price.replace(/^\./, "0.");
-      this.productForm.selling_price = selling_price;
-      const tofixed = selling_price.match(/(\d*\.\d{2})\d*/);
-      if (tofixed) {
-        this.productForm.selling_price = tofixed[1];
-      }
+  },
+  deactivated() {
+    this.fileList = [];
+    this.productForm = {};
+    this.productID = "";
+  },
+  methods: {
+    test() {
+      console.log(this.fileList);
+      console.log("and");
+      console.log(this.$refs.upload.uploadFiles);
     },
     //上传商品信息
     submitForm() {
@@ -240,9 +240,7 @@ export default {
       const formData = new FormData();
       //上传图片
       const file = this.$refs.upload.uploadFiles;
-      if (!this.checkUpload(this.productForm)) {
-        return;
-      }
+
       const {
         saleType,
         name,
@@ -252,18 +250,20 @@ export default {
         intro,
         title,
         deliveryType,
+        product_id,
       } = this.productForm;
+      console.log(file);
       for (let i = 0; i < file.length; i++) {
-        const suffix = file[i].raw.name.split(".").pop();
+        const suffix = file[i].name.split(".").pop();
         const reName = `${saleType}_${name}_${i + 1}.${suffix}`;
         const reFile = new File([file[i].raw], reName, {
           type: file[i].raw.type,
         });
         formData.append("file", reFile, reName);
       }
-      formData.append("user_id", this.$store.getters.getUser.uuid);
       const productsData = {
         product_name: name,
+        product_id: product_id,
         product_num: num,
         product_price: price,
         product_selling_price: selling_price,
@@ -273,21 +273,88 @@ export default {
         deliveryType: deliveryType,
       };
       formData.append("productsData", JSON.stringify(productsData));
-      this.$axios
-        .post("/product/addProduct", formData)
-        .then((res) => {
-          if (res.data.code === "001") {
-            this.notifySucceed(res.data.msg);
-            this.uploadDisabled = false;
-            this.$refs.upload.uploadFiles.pop();
-            this.$router.push("/sale");
-          } else {
-            this.notifyError(res.data.msg);
-          }
-        })
-        .catch((err) => {
-          return Promise.reject(err);
-        });
+      console.log(formData);
+      //   this.$axios
+      //     .post("/product/updateProduct", formData)
+      //     .then((res) => {
+      //       if (res.data.code === "001") {
+      //         this.notifySucceed(res.data.msg);
+      //         this.uploadDisabled = false;
+      //         this.$refs.upload.uploadFiles.pop();
+      //         this.$router.push("/sale");
+      //       } else {
+      //         this.notifyError(res.data.msg);
+      //       }
+      //     })
+      //     .catch((err) => {
+      //       return Promise.reject(err);
+      //     });
+    },
+    //更新商品信息
+    async submitForm2() {
+      // let that = this;
+      //用formdata传递数据
+      const formData = new FormData();
+      //上传图片
+      const file = this.$refs.upload.uploadFiles;
+      const {
+        saleType,
+        name,
+        num,
+        price,
+        selling_price,
+        intro,
+        title,
+        deliveryType,
+        product_id,
+      } = this.productForm;
+      for (let i = 0; i < file.length; i++) {
+        const suffix = file[i].name.split(".").pop();
+        const reName = `${saleType}_${name}_${i + 1}.${suffix}`;
+        if (file[i].isUpdate) {
+            console.log('Jin:');
+            const _reName =  'tempDamon'+reName
+          const reFile = new File([file[i]], _reName, {
+            type: "image/jpeg",
+          });
+          console.log(reFile,"reFile");
+          formData.append("file", reFile, _reName);
+        } else {
+            console.log('else');
+          const reFile = new File([file[i].raw], reName, {
+            type: file[i].raw.type,
+          });
+          formData.append("file", reFile, reName);
+        }
+      }
+      const productsData = {
+        product_name: name,
+        product_id: product_id,
+        product_num: num,
+        product_price: price,
+        product_selling_price: selling_price,
+        product_intro: intro,
+        product_title: title,
+        category_name: saleType,
+        deliveryType: deliveryType,
+      };
+      formData.append("productsData", JSON.stringify(productsData));
+    console.log(formData.get('file'));
+        this.$axios
+          .post("/product/updateProduct", formData)
+          .then((res) => {
+            if (res.data.code === "001") {
+              this.notifySucceed(res.data.msg);
+              this.uploadDisabled = false;
+              this.$refs.upload.uploadFiles.pop();
+              this.$router.push("/sale");
+            } else {
+              this.notifyError(res.data.msg);
+            }
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
     },
     //改变图片钩子
     handleChange(file, fileList) {
@@ -300,6 +367,7 @@ export default {
       if (fileList.length >= 1) {
         this.uploadDisabled = true;
       }
+      console.log(this.$refs.upload.uploadFiles);
     },
     //删除图片钩子
     handleRemove(file) {
@@ -321,45 +389,76 @@ export default {
       }
       return (isJPG || isPNG) && isLt2M;
     },
-    //传数据校验
-    checkUpload(data) {
-      let msg = "";
-      if (data.name.length < 1) {
-        msg = "商品名称不为空";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.num < 0) {
-        msg = "商品数量不能小于1";
-        this.notifyError(msg);
-        return false;
-      }
-      if (!(parseInt(data.num, 10) == data.num)) {
-        msg = "商品数量格式错误";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.price < 0.01 || data.selling_price < 0.01) {
-        msg = "商品价格不能小于0.01";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.title.length < 1) {
-        msg = "商品标题不能为空";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.intro.length < 1) {
-        msg = "商品介绍不能为空";
-        this.notifyError(msg);
-        return false;
-      }
-      return true;
+    getBase64Image(img) {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+      const ext = img.src.substring(img.src.lastIndexOf(".") + 1).toLowerCase();
+      const dataURL = canvas.toDataURL("image/" + ext);
+      return dataURL;
     },
-  },
-  activated() {
-    this.productForm.saleType = this.saleTypeOptions[3].value;
-    this.productForm.deliveryType = this.deliveryTypeOptions[0].value;
+    //Base64字符串转二进制
+    dataURLtoBlob(dataurl) {
+      const arr = dataurl.split(","),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], {
+        type: mime,
+      });
+    },
+    getProduct(val) {
+      this.$axios
+        .post("/product/getDetails", {
+          productID: val,
+        })
+        .then((res) => {
+          const data = res.data.Product[0];
+          const productForm = this.productForm;
+          productForm.num = data.product_num;
+          productForm.name = data.product_name;
+          productForm.price = data.product_price;
+          productForm.selling_price = data.product_selling_price;
+          productForm.intro = data.product_intro;
+          productForm.title = data.product_title;
+          productForm.saleType = this.saleTypeOptions[
+            data.category_id - 1
+          ].value;
+          productForm.deliveryType = data.deliveryType;
+          productForm.product_id = data.product_id;
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+    getDetailsPicture(val) {
+      this.$axios
+        .post("/product/getDetailsPicture", {
+          productID: val,
+        })
+        .then((res) => {
+          let teamArr = [];
+          res.data.ProductPicture.product_picture.forEach((item) => {
+            const arr = item.split("\\");
+            const name = arr[arr.length - 1];
+            teamArr.push({
+              name: name,
+              url: item,
+              isUpdate: true,
+            });
+          });
+          this.fileList = teamArr;
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
   },
 };
 </script>
