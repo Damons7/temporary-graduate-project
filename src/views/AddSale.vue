@@ -354,6 +354,12 @@ export default {
         this.notifyError(msg);
         return false;
       }
+      const imgArr =this.$refs.upload.uploadFiles;
+      if(imgArr.length<1){
+         msg = "请上传商品图片";
+        this.notifyError(msg);
+        return false;
+      }
       return true;
     },
   },

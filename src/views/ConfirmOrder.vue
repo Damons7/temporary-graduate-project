@@ -92,7 +92,6 @@
                 @setIsShowAddressIn="setIsShowAdd"
                 @OnOKAddress="addAddress"
               ></Form>
-              <!-- <div>11</div> -->
             </li>
           </ul>
         </div>
@@ -107,9 +106,13 @@
             <li v-for="item in getCheckGoods" :key="item.id">
               <img :src="$target + item.productImg" />
               <span class="pro-name">{{ item.productName }}</span>
-              <span class="pro-price">{{ item.price }}元 x {{ item.num }}</span>
+              <span class="pro-price"
+                >{{ item.selling_price }}元 x {{ item.num }}</span
+              >
               <span class="pro-status"></span>
-              <span class="pro-total">{{ item.price * item.num }}元</span>
+              <span class="pro-total"
+                >{{ item.selling_price * item.num }}元</span
+              >
             </li>
           </ul>
         </div>
@@ -146,7 +149,7 @@
             </li>
             <li>
               <span class="title">活动优惠：</span>
-              <span class="value">-0元</span>
+              <span class="value">-{{ getSelling }}元</span>
             </li>
             <li>
               <span class="title">优惠券抵扣：</span>
@@ -183,6 +186,7 @@
         </div>
       </div>
       <!-- 结算导航END -->
+      <el-button @click="test">test</el-button>
     </div>
     <!-- 主要内容容器END -->
   </div>
@@ -226,19 +230,28 @@ export default {
   computed: {
     // 结算的商品数量; 结算商品总计; 结算商品信息
     ...mapGetters(["getCheckNum", "getTotalPrice", "getCheckGoods"]),
+    getSelling() {
+      return this.getCheckGoods.reduce(
+        (acc, cur) => cur.price - cur.selling_price + acc,
+        0
+      );
+    },
   },
   methods: {
     ...mapActions(["deleteShoppingCart"]),
+    test() {
+      console.log(this.getCheckGoods, "getTotalPrice");
+    },
     //添加订单
     addOrder() {
-       this.$axios.defaults.headers.common[
+      this.$axios.defaults.headers.common[
         "Authorization"
       ] = this.$store.getters.getUser.token;
       this.$axios
         .post("/users/order/addOrder", {
           user_id: this.$store.getters.getUser.uuid,
           products: this.getCheckGoods,
-          address:this.address[this.confirmAddress]
+          address: this.address[this.confirmAddress],
         })
         .then((res) => {
           let products = this.getCheckGoods;
@@ -379,7 +392,7 @@ export default {
             _thisAddress.isDefault = _updateAddress.isDefault;
             _thisAddress.updateDate = _updateAddress.updateDate;
             _thisAddress.isShowAddressIn = false;
-            this.notifySucceed(res.data.msg);  
+            this.notifySucceed(res.data.msg);
           } else {
             // 弹出通知框提示失败信息
             this.notifyError(res.data.msg);

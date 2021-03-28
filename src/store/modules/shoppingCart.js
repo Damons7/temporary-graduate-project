@@ -74,7 +74,7 @@ export default {
       for (let i = 0; i < state.shoppingCart.length; i++) {
         const temp = state.shoppingCart[i];
         if (temp.check) {
-          totalPrice += temp.price * temp.num;
+          totalPrice += temp.selling_price * temp.num;
         }
       }
       return totalPrice;

@@ -1,5 +1,5 @@
 <!--
- * @Description: 添加上架商品
+ * @Description: 用户信息
  * @Author: 李鸿智
  -->
 <template>
@@ -46,6 +46,7 @@
             :src="userData.avatar"
             alt=""
             class="user-img"
+            @error="userData.avatar = userDefault"
           />
           <el-form
             enctype="multipart/form-data"
@@ -89,6 +90,8 @@
             v-model="userData.name"
             placeholder="请输入姓名"
             v-if="updateData.isUpdate"
+            maxlength="20"
+            minlength="1"
           >
           </el-input>
           <div v-else>{{ userData.name }}</div>
@@ -109,7 +112,7 @@
             >
             </el-option>
           </el-select>
-          <div v-else>{{ userData.gender ? userData.gender : "未设置" }}</div>
+          <div v-else>{{ userData.gender }}</div>
         </div>
       </div>
 
@@ -128,9 +131,11 @@
             v-model="userData.age"
             placeholder="请输入年龄"
             v-if="updateData.isUpdate"
+            max="100"
+            min="1"
           >
           </el-input>
-          <div v-else>{{ userData.age ? `${userData.age}岁` : "未设置" }}</div>
+          <div v-else>{{ `${userData.age} 岁` }}</div>
         </div>
       </div>
 
@@ -233,10 +238,12 @@
 </template>
 <script>
 import { mapActions } from "vuex";
+import userDefault from "../../public/imgs/userDefault.png";
 export default {
   name: "User",
   data() {
     return {
+      userDefault: userDefault, //如遇图片加载失败，则使用默认头像
       showUpdate: true, //为true展示修改信息，false展示密码修改
       updateData: {
         popover: false,
@@ -291,7 +298,7 @@ export default {
       //上传图片
       const file = this.$refs.upload.uploadFiles[0];
       const suffix = file.raw.name.split(".").pop();
-      const reName = this.$store.getters.getUser.uuid + '.' + suffix;
+      const reName = this.$store.getters.getUser.uuid + "." + suffix;
       const reFile = new File([file.raw], reName, {
         type: file.raw.type,
       });
@@ -329,7 +336,6 @@ export default {
     handleRemove(file) {
       console.log(file, "删除");
       this.uploadDisabled = false;
-
     },
     //限制上传图片标准
     beforeAvatarUpload(file) {
@@ -362,12 +368,16 @@ export default {
       this.updateData.updateBtnText = "修改信息";
       this.updateData.popover = false;
     },
+    //确认修改信息
     updateInfoOK() {
       const updateData = {
         name: this.userData.name,
         age: this.userData.age,
         gender: this.userData.gender,
       };
+      if (!this.checkInfo(updateData)) {
+        return;
+      }
       this.$axios.defaults.headers.common[
         "Authorization"
       ] = this.$store.getters.getUser.token;
@@ -391,6 +401,25 @@ export default {
           return Promise.reject(err);
         });
     },
+    //校验信息格式
+    checkInfo(updateData) {
+      let msg = "";
+      if (updateData.name.length < 1) {
+        msg = "姓名不能为空";
+        this.notifyError(msg);
+        return false;
+      }
+      if (
+        !(parseInt(updateData.age) == updateData.age) ||
+        updateData.age < 0 ||
+        updateData.age > 150
+      ) {
+        msg = "年龄格式不太对劲哦！";
+        this.notifyError(msg);
+        return false;
+      }
+      return true;
+    },
     updatePassword() {
       //切换为修改密码页面
       this.passwordData = {
@@ -406,14 +435,15 @@ export default {
       if (oldPassword.length < 1) {
         this.checkConfig.oldPassword.showError = true;
         this.checkConfig.oldPassword.error = "请输入原密码!";
-        return;
+        return true;
       }
       if (oldPassword.length < 6) {
         this.checkConfig.oldPassword.showError = true;
         this.checkConfig.oldPassword.error = "原密码长度为6~16位!";
-        return;
+        return true;
       }
       this.checkConfig.oldPassword.showError = false;
+      return false;
     },
     //新密码校验
     checkNewPassword() {
@@ -421,14 +451,15 @@ export default {
       if (newPassword.length < 1) {
         this.checkConfig.newPassword.showError = true;
         this.checkConfig.newPassword.error = "请输入新密码!";
-        return;
+        return true;
       }
       if (newPassword.length < 6) {
         this.checkConfig.newPassword.showError = true;
         this.checkConfig.newPassword.error = "新密码长度为6~16位!";
-        return;
+        return true;
       }
       this.checkConfig.newPassword.showError = false;
+      return false;
     },
     //确认密码校验
     checkNewPassword2() {
@@ -436,12 +467,22 @@ export default {
       if (newPassword2 !== this.passwordData.newPassword) {
         this.checkConfig.newPassword2.showError = true;
         this.checkConfig.newPassword2.error = "密码不一致!";
-        return;
+        return true;
       }
       this.checkConfig.newPassword2.showError = false;
+      return false;
     },
     //更新密码请求
     updatePasswordOK() {
+      if (
+        [
+          this.checkOldPassword(),
+          this.checkNewPassword(),
+          this.checkNewPassword2(),
+        ].some((item) => item)
+      ) {
+        return;
+      }
       const { oldPassword, newPassword } = this.passwordData;
       this.$axios.defaults.headers.common[
         "Authorization"

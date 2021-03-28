@@ -12,13 +12,13 @@
     size="mini"
   >
     <el-form-item label="收件人" prop="name">
-      <el-input v-model="addressForm.name"></el-input>
+      <el-input v-model="addressForm.name" maxlength="20" minlength="1"></el-input>
     </el-form-item>
     <el-form-item label="电话" prop="phone">
-      <el-input v-model="addressForm.phone"></el-input>
+      <el-input v-model="addressForm.phone" maxlength="20"></el-input>
     </el-form-item>
     <el-form-item label="地址" prop="address">
-      <el-input v-model="addressForm.address"></el-input>
+      <el-input v-model="addressForm.address" maxlength="50" minlength="10"></el-input>
     </el-form-item>
     <el-form-item label="设为默认" prop="isDefault">
       <el-switch v-model="addressForm.isDefault" :width="26"></el-switch>
@@ -71,8 +71,8 @@ export default {
       if (value.length > 50) {
         return callback(new Error("地址太长啦"));
       }
-      if (value.length < 5) {
-        return callback(new Error("地址太短啦"));
+      if (value.length < 10) {
+        return callback(new Error("地址太不详细啦"));
       }
       this.$refs.ruleForm.validateField("checkPass");
       return callback();
