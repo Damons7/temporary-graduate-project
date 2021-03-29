@@ -4,7 +4,8 @@
  -->
 <template>
   <div id="details">
-    <!-- 头部 -->
+   <div v-if="productDetails">
+      <!-- 头部 -->
     <div class="details-page-header">
       <div class="details-page-title">
         <p>{{ productDetails.product_name }}</p>
@@ -31,11 +32,7 @@
       <div class="details-swiper">
         <el-carousel height="560px" v-if="productPicture.length">
           <el-carousel-item v-for="item in productPicture" :key="item.id">
-            <img
-              style="height: 560px"
-              :src="$target + item"
-              alt="加载失败"
-            />
+            <img style="height: 560px" :src="$target + item" alt="加载失败" />
           </el-carousel-item>
         </el-carousel>
       </div>
@@ -99,7 +96,15 @@
       <!-- 右侧内容区END -->
     </div>
     <!-- 主要内容END -->
+   </div>
+     <div v-else class="details-empty">
+      <div class="empty">
+        <h2>该商品已经下架！</h2>
+        <p>快去购买其他商品吧！</p>
+      </div>
+    </div>
   </div>
+  
 </template>
 <script>
 import { mapActions } from "vuex";
@@ -167,12 +172,12 @@ export default {
       this.$axios.defaults.headers.common[
         "Authorization"
       ] = this.$store.getters.getUser.token;
-  
+
       this.$axios
         .post("/users/shoppingCart/addShoppingCart", {
           user_id: this.$store.getters.getUser.uuid,
           product_id: this.productID,
-          from_user:this.productDetails.from_user
+          from_user: this.productDetails.from_user,
         })
         .then((res) => {
           switch (res.data.code) {
@@ -189,6 +194,10 @@ export default {
             case "003":
               // 商品数量达到限购数量
               this.dis = true;
+              this.notifyError(res.data.msg);
+              break;
+            case "004":
+              // 商品库存不足
               this.notifyError(res.data.msg);
               break;
             default:
@@ -368,6 +377,27 @@ export default {
           margin-right: 20px;
           color: #b0b0b0;
         }
+      }
+    }
+  }
+
+  .details-empty {
+    width: 1225px;
+    margin: 0 auto;
+    .empty {
+      height: 300px;
+      padding: 0 0 130px 558px;
+      margin: 65px 0 0;
+      background: url(../assets/imgs/cart-empty.png) no-repeat 124px 0;
+      color: #b0b0b0;
+      overflow: hidden;
+      h2 {
+        margin: 70px 0 15px;
+        font-size: 36px;
+      }
+      p {
+        margin: 0 0 20px;
+        font-size: 20px;
       }
     }
   }

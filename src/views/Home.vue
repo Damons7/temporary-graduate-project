@@ -164,7 +164,7 @@
               </ul>
             </div>
             <div class="box-list">
-              <Item :list="amusementList" :isMore="true"></Item>
+              <Item :list="accessoryList" :isMore="true"></Item>
             </div>
           </div>
         </div>
@@ -184,6 +184,7 @@ export default {
       amusementList: [], //配件商品列表
       amusementHotList: [], //热门配件商品列表
       protectingShellList: [], // 保护套商品列表
+      accessoryList:[],//其他宝藏列表
       chargerList: [], //充电器商品列表
       applianceActive: 1, // 家电当前选中的商品分类
       amusementActive: 1, // 配件当前选中的商品分类
@@ -261,6 +262,7 @@ export default {
     this.getPromo("书籍", "bookList");
      this.getPromo("娱乐", "amusementList");
     this.getPromo("电子设备", "applianceList");
+    this.getPromo("其他宝藏", "accessoryList");
   },
   // created() {
   //   // 获取轮播图数据

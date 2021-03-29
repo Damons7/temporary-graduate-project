@@ -186,7 +186,6 @@
         </div>
       </div>
       <!-- 结算导航END -->
-      <el-button @click="test">test</el-button>
     </div>
     <!-- 主要内容容器END -->
   </div>
@@ -239,11 +238,12 @@ export default {
   },
   methods: {
     ...mapActions(["deleteShoppingCart"]),
-    test() {
-      console.log(this.getCheckGoods, "getTotalPrice");
-    },
     //添加订单
     addOrder() {
+      if (this.address.length<1) {
+        this.notifyError("请填写地址");
+        return;
+      }
       this.$axios.defaults.headers.common[
         "Authorization"
       ] = this.$store.getters.getUser.token;
@@ -301,10 +301,11 @@ export default {
           user_id: this.$store.getters.getUser.uuid,
         })
         .then((res) => {
-          this.address = res.data.address.map((item) => {
+          this.address = res.data.address?.map((item) => {
             item.isShowAddressIn = false;
             return item;
           });
+          this.address = this.address ? this.address : [];
         })
         .catch((err) => {
           return Promise.reject(err);
