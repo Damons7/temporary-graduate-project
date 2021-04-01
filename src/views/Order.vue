@@ -18,17 +18,12 @@
     </div>
     <!-- 我的订单头部END -->
     <div class="order-menu">
-      <el-menu
-        :default-active="activeIndex"
-        class="el-menu-demo"
-        mode="horizontal"
-        active-text-color="#409eff"
-        router
-      >
-        <el-menu-item>全部订单</el-menu-item>
-        <el-menu-item>代发货</el-menu-item>
-        <el-menu-item>正在发货</el-menu-item>
-        <el-menu-item>已签收</el-menu-item>
+      <el-menu default-active="1" mode="horizontal" active-text-color="#ff6700">
+        <el-menu-item index="1" @click="selectOrder(1)">全部订单</el-menu-item>
+        <el-menu-item index="2" @click="selectOrder(2)">待发货</el-menu-item>
+        <el-menu-item index="3" @click="selectOrder(3)">待收货</el-menu-item>
+        <el-menu-item index="4" @click="selectOrder(4)">已收货</el-menu-item>
+        <el-menu-item index="5" @click="selectOrder(5)">已退货</el-menu-item>
       </el-menu>
     </div>
 
@@ -39,9 +34,7 @@
           <!-- 我的订单表头 -->
           <li class="order-info">
             <div class="order-id">订单编号: {{ item[0].order_id }}</div>
-            <div class="order-time">
-              订单时间: {{ item[0].updateDate | dateFormat }}
-            </div>
+            <div class="order-time">订单时间: {{ item[0].updateDate }}</div>
           </li>
           <li class="header">
             <div class="pro-img"></div>
@@ -65,7 +58,7 @@
                 <img :src="$target + product.product_picture" />
               </router-link>
             </div>
-             <div class="pro-name">
+            <div class="pro-name">
               <router-link
                 :to="{
                   path: '/goods/details',
@@ -79,7 +72,7 @@
             <div class="pro-total pro-total-in">
               {{ product.product_price * product.product_num }}元
             </div>
-            <div class="pro-total pro-state">{{product.order_state}}</div>
+            <div class="pro-state">{{ product.order_state }}</div>
           </li>
         </ul>
         <div class="order-bar">
@@ -90,12 +83,41 @@
               件商品
             </span>
           </div>
+          <div
+            class="order-bar-right"
+            v-show="
+              item[0].order_state === '已收货' ||
+              item[0].order_state === '已退货'
+                ? false
+                : true
+            "
+          >
+            <div
+              class="operate"
+              @click="
+                isOperateOK = true;
+                orderIndex = index;
+              "
+            >
+              确认收货
+            </div>
+            <div
+              class="operate"
+              @click="
+                isOperateReturn = true;
+                orderIndex = index;
+              "
+            >
+              退货
+            </div>
+          </div>
           <div class="order-bar-right">
             <span>
               <span class="total-price-title">合计：</span>
               <span class="total-price">{{ total[index].totalPrice }}元</span>
             </span>
           </div>
+
           <!-- 订单列表END -->
         </div>
       </div>
@@ -111,22 +133,163 @@
       </div>
     </div>
     <!-- 订单为空的时候显示的内容END -->
+
+    <!-- 确认收货弹窗 -->
+    <el-popover
+      placement="top"
+      width="180"
+      v-model="isOperateOK"
+      class="popover"
+    >
+      <div>确定收货？</div>
+      <div style="text-align: right; margin: 10px 10px">
+        <el-button type="primary" size="mini" @click="operateOK"
+          >确定</el-button
+        >
+        <el-button size="mini" type="default" @click="isOperateOK = false"
+          >取消</el-button
+        >
+      </div>
+    </el-popover>
+    <!-- 确认收货弹窗END -->
+
+    <!-- 确认退货弹窗 -->
+    <el-popover
+      placement="top"
+      width="180"
+      v-model="isOperateReturn"
+      class="popover"
+    >
+      <div>确定退货？</div>
+      <div style="text-align: right; margin: 10px 10px">
+        <el-button type="primary" size="mini" @click="operateReturn"
+          >确定</el-button
+        >
+        <el-button size="mini" type="default" @click="isOperateReturn = false"
+          >取消</el-button
+        >
+      </div>
+    </el-popover>
+    <!-- 确认退货弹窗END -->
   </div>
 </template>
 <script>
 export default {
   data() {
     return {
+      orderIndex: 0,
+      isOperateOK: false, //是否确认收货弹窗
+      isOperateReturn: false, //是否确认退货弹窗
       activeIndex: "", // 订单选中的标签
       orders: [], // 订单列表
+      ordersTemp: [], // 订单列表临时存储
       total: [], // 每个订单的商品数量及总价列表
     };
   },
-  activated() {
-    // 获取订单数据
-     this.$axios.defaults.headers.common[
+  methods: {
+    //确认收货
+    operateOK() {
+      this.$axios.defaults.headers.common[
         "Authorization"
       ] = this.$store.getters.getUser.token;
+      const index = this.orderIndex;
+      const order = this.orders[index][0];
+      this.$axios
+        .post("/users/order/onOKOrder", {
+          order_id: order.order_id,
+          product_id: order.product_id,
+          from_user: order.from_user,
+        })
+        .then((res) => {
+          if (res.data.code === "001") {
+            this.notifySucceed(res.data.msg);
+            this.isOperateOK = false;
+            this.orders[index] = this.orders[index].map((item) => {
+              item.order_state = "已收货";
+              return item;
+            });
+            this.ordersTemp[index] = this.ordersTemp[index].map((item) => {
+              item.order_state = "已收货";
+              return item;
+            });
+          } else {
+            this.notifyError(res.data.msg);
+          }
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+    //退货操作
+    operateReturn() {
+      this.$axios.defaults.headers.common[
+        "Authorization"
+      ] = this.$store.getters.getUser.token;
+      const index = this.orderIndex;
+      const order = this.orders[index][0];
+      this.$axios
+        .post("/users/order/ReturnOrder", {
+          order_id: order.order_id,
+          product_id: order.product_id,
+          from_user: order.from_user,
+        })
+        .then((res) => {
+          if (res.data.code === "001") {
+            this.notifySucceed(res.data.msg);
+            this.isOperateReturn = false;
+            this.orders[index] = this.orders[index].map((item) => {
+              item.order_state = "已退货";
+              return item;
+            });
+            this.ordersTemp[index] = this.ordersTemp[index].map((item) => {
+              item.order_state = "已退货";
+              return item;
+            });
+          } else {
+            this.notifyError(res.data.msg);
+          }
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+    //订单类型选择
+    selectOrder(index) {
+      switch (index) {
+        case 1:
+          this.orders = [...this.ordersTemp];
+          break;
+        case 2:
+          this.orders = this.ordersTemp.filter(
+            (item) => item[0].order_state === "待发货"
+          );
+          break;
+        case 3:
+          this.orders = this.ordersTemp.filter(
+            (item) => item[0].order_state === "待收货"
+          );
+          break;
+        case 4:
+          this.orders = this.ordersTemp.filter(
+            (item) => item[0].order_state === "已收货"
+          );
+          break;
+        case 5:
+          this.orders = this.ordersTemp.filter(
+            (item) => item[0].order_state === "已退货"
+          );
+          break;
+        default:
+          this.orders = [...this.ordersTemp];
+          break;
+      }
+    },
+  },
+  activated() {
+    // 获取订单数据
+    this.$axios.defaults.headers.common[
+      "Authorization"
+    ] = this.$store.getters.getUser.token;
     this.$axios
       .post("/users/order/getOrder", {
         user_id: this.$store.getters.getUser.uuid,
@@ -134,6 +297,8 @@ export default {
       .then((res) => {
         if (res.data.code === "001") {
           this.orders = res.data.orders;
+          this.ordersTemp = res.data.orders;
+          console.log(this.orders);
         } else {
           this.notifyError(res.data.msg);
         }
@@ -234,8 +399,8 @@ export default {
       .pro-img {
         float: left;
         height: 85px;
-        width: 120px;
-        padding-left: 80px;
+        width: 150px;
+        padding-left: 60px;
         img {
           height: 80px;
           width: 80px;
@@ -295,6 +460,8 @@ export default {
     }
     .order-bar-right {
       float: right;
+      margin-right: 20px;
+      display: flex;
       .total-price-title {
         color: #ff6700;
         font-size: 14px;
@@ -302,6 +469,12 @@ export default {
       .total-price {
         color: #ff6700;
         font-size: 30px;
+      }
+      .operate {
+        margin-right: 14px;
+        cursor: pointer;
+        color: #777;
+        text-decoration: underline;
       }
     }
   }
@@ -329,5 +502,12 @@ export default {
     }
   }
   /* 订单为空的时候显示的内容CSS END */
+
+  /*确认弹窗 */
+  .popover {
+    position: fixed;
+    top: 50%;
+    left: 60%;
+  }
 }
 </style>

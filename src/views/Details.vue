@@ -235,7 +235,7 @@ export default {
           return Promise.reject(err);
         });
     },
-  },
+  }
 };
 </script>
 <style lang='less'>

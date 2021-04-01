@@ -11,8 +11,30 @@
           <i class="el-icon-circle-plus-outline"></i>
         </p>
         <p>更新上架商品</p>
-        <router-link to></router-link>
+
+        <el-button class="returnProduct" @click="test"
+          >下架该商品</el-button
+        >
+            <!-- 确认下架弹窗 -->
+        <el-popover
+          placement="top"
+          width="180"
+          v-model="isReturn"
+          class="popover"
+        >
+          <div>确定下架？</div>
+          <div style="text-align: right; margin: 10px 10px">
+            <el-button type="primary" size="mini" @click="returnProduct"
+              >确定</el-button
+            >
+            <el-button size="mini" type="default" @click="isReturn = false"
+              >取消</el-button
+            >
+          </div>
+        </el-popover>
+        <!-- 确认下架弹窗END -->
       </div>
+    
     </div>
     <!-- 头部END -->
 
@@ -141,7 +163,6 @@
           </el-form-item>
         </el-form>
       </div>
-      <el-button @click="test">test</el-button>
       <!-- 上架确认 -->
       <div class="section-bar">
         <div class="btn">
@@ -160,10 +181,13 @@
   </div>
 </template>
 <script>
+import { checkUpload } from "../utils/checkUpload";
+
 export default {
   name: "UpdateSale",
   data() {
     return {
+      isReturn: false, //确认下架弹窗
       fileList: [],
       productID: "",
       productForm: {
@@ -229,10 +253,9 @@ export default {
     this.productID = "";
   },
   methods: {
-    test() {
-      console.log(this.fileList);
-      console.log("and");
-      console.log(this.$refs.upload.uploadFiles);
+    test(){
+      console.log(1);
+     this.isReturn = true
     },
     //上传商品信息
     submitForm() {
@@ -252,7 +275,6 @@ export default {
         deliveryType,
         product_id,
       } = this.productForm;
-      console.log(file);
       for (let i = 0; i < file.length; i++) {
         const suffix = file[i].name.split(".").pop();
         const reName = `${saleType}_${name}_${i + 1}.${suffix}`;
@@ -292,7 +314,13 @@ export default {
     },
     //更新商品信息
     async submitForm2() {
-      // let that = this;
+      //校验更新数据
+      const msg = checkUpload(this.productForm);
+      if (msg) {
+        this.notifyError(msg);
+        return;
+      }
+      let that = this;
       //用formdata传递数据
       const formData = new FormData();
       //上传图片
@@ -308,24 +336,33 @@ export default {
         deliveryType,
         product_id,
       } = this.productForm;
+      //循环文件
       for (let i = 0; i < file.length; i++) {
         const suffix = file[i].name.split(".").pop();
         const reName = `${saleType}_${name}_${i + 1}.${suffix}`;
+
+        const img = new Image();
+        img.src = file[i].url;
+        //转为指定图片格式
+        const getImg = () => {
+          return new Promise((res, rej) => {
+            img.onload = function () {
+              const base64 = that.getBase64Image(img);
+              //Base64字符串转二进制
+              res(that.dataURLtoBlob(base64));
+            };
+            img.onerror = () => {
+              rej("");
+            };
+          });
+        };
         if (file[i].isUpdate) {
-            console.log('Jin:');
-            const _reName =  'tempDamon'+reName
-          const reFile = new File([file[i]], _reName, {
-            type: "image/jpeg",
-          });
-          console.log(reFile,"reFile");
-          formData.append("file", reFile, _reName);
-        } else {
-            console.log('else');
-          const reFile = new File([file[i].raw], reName, {
-            type: file[i].raw.type,
-          });
-          formData.append("file", reFile, reName);
+          file[i].raw = await getImg();
         }
+        const reFile = new File([file[i].raw], reName, {
+          type: file[i].raw.type,
+        });
+        formData.append("file", reFile, reName);
       }
       const productsData = {
         product_name: name,
@@ -339,25 +376,25 @@ export default {
         deliveryType: deliveryType,
       };
       formData.append("productsData", JSON.stringify(productsData));
-    console.log(formData.get('file'));
-        this.$axios
-          .post("/product/updateProduct", formData)
-          .then((res) => {
-            if (res.data.code === "001") {
-              this.notifySucceed(res.data.msg);
-              this.uploadDisabled = false;
-              this.$refs.upload.uploadFiles.pop();
-              this.$router.push("/sale");
-            } else {
-              this.notifyError(res.data.msg);
-            }
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
+      this.$axios
+        .post("/product/updateProduct", formData)
+        .then((res) => {
+          if (res.data.code === "001") {
+            this.notifySucceed(res.data.msg);
+            this.uploadDisabled = false;
+            this.$refs.upload.uploadFiles.pop();
+            this.$router.push("/sale");
+          } else {
+            this.notifyError(res.data.msg);
+          }
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
     },
-    //改变图片钩子
+    //改变图片钩子（添加图片）
     handleChange(file, fileList) {
+      //添加前验证图片格式
       if (!this.beforeAvatarUpload(file.raw)) {
         this.$refs.upload.uploadFiles.pop();
         return;
@@ -367,13 +404,13 @@ export default {
       if (fileList.length >= 1) {
         this.uploadDisabled = true;
       }
-      console.log(this.$refs.upload.uploadFiles);
+      //添加入文件列表
+      this.fileList.push(file);
     },
     //删除图片钩子
     handleRemove(file) {
-      console.log(file, "删除");
       this.uploadDisabled = false;
-      this.fileList = [];
+      this.fileList = this.fileList.filter((item) => item.name !== file.name);
     },
     //限制上传图片标准
     beforeAvatarUpload(file) {
@@ -450,10 +487,32 @@ export default {
             teamArr.push({
               name: name,
               url: item,
-              isUpdate: true,
+              isUpdate: true, //自定义标识符，表示原来存在在图片
             });
           });
           this.fileList = teamArr;
+          console.log(this.fileList);
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    },
+    //下架操作
+    returnProduct() {
+      this.$axios
+        .post("/product/returnProduct", {
+          product_id: this.productID
+        })
+        .then((res) => {
+          if (res.data.code === "001") {
+            this.notifySucceed(res.data.msg);
+            this.fileList = [];
+            this.productForm = {};
+            this.productID = "";
+            this.$router.push("/sale");
+          } else {
+            this.notifyError(res.data.msg);
+          }
         })
         .catch((err) => {
           return Promise.reject(err);
@@ -485,6 +544,23 @@ export default {
           font-size: 45px;
           color: #ff6700;
           line-height: 80px;
+        }
+      }
+      .returnProduct {
+        float: right;
+        width: 200px;
+        color: #ff6700;
+        border: 1px solid #ff6700;
+        margin-top: 20px;
+      }
+      .popover {
+        display: block;
+        width: 80%;
+        height: 100%;
+        position: relative;
+        .el-popover {
+          right: 0;
+          top: 0;
         }
       }
     }

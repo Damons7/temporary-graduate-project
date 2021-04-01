@@ -148,7 +148,6 @@
           </el-form-item>
         </el-form>
       </div>
-
       <!-- 上架确认 -->
       <div class="section-bar">
         <div class="btn">
@@ -167,6 +166,7 @@
   </div>
 </template>
 <script>
+import { checkUpload } from "../utils/checkUpload";
 export default {
   name: "AddSale",
   data() {
@@ -236,13 +236,16 @@ export default {
     },
     //上传商品信息
     submitForm() {
+      //校验更新数据
+      const msg = checkUpload(this.productForm);
+      if (msg) {
+        this.notifyError(msg);
+        return;
+      }
       //用formdata传递数据
       const formData = new FormData();
       //上传图片
       const file = this.$refs.upload.uploadFiles;
-      if (!this.checkUpload(this.productForm)) {
-        return;
-      }
       const {
         saleType,
         name,
@@ -320,47 +323,6 @@ export default {
         this.notifyError("图片大小必须小于2MB!");
       }
       return (isJPG || isPNG) && isLt2M;
-    },
-    //传数据校验
-    checkUpload(data) {
-      let msg = "";
-      if (data.name.length < 1) {
-        msg = "商品名称不为空";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.num < 0) {
-        msg = "商品数量不能小于1";
-        this.notifyError(msg);
-        return false;
-      }
-      if (!(parseInt(data.num, 10) == data.num)) {
-        msg = "商品数量格式错误";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.price < 0.01 || data.selling_price < 0.01) {
-        msg = "商品价格不能小于0.01";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.title.length < 1) {
-        msg = "商品标题不能为空";
-        this.notifyError(msg);
-        return false;
-      }
-      if (data.intro.length < 1) {
-        msg = "商品介绍不能为空";
-        this.notifyError(msg);
-        return false;
-      }
-      const imgArr = this.$refs.upload.uploadFiles;
-      if (imgArr.length < 1) {
-        msg = "请上传商品图片";
-        this.notifyError(msg);
-        return false;
-      }
-      return true;
     },
   },
   activated() {

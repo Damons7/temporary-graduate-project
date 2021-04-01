@@ -118,16 +118,16 @@
       <!-- 待发货订单主要内容END -->
       <!-- 待发货 END-->
 
-      <!-- 发货中 -->
+      <!-- 待收货 -->
       <div class="sale-state">
         <i class="el-icon-sold-out" style="color: #ff6700"></i>
-        发货中
+        待收货
       </div>
-      <!-- 发货中订单主要内容 -->
+      <!-- 待收货订单主要内容 -->
       <div v-if="delivering.length">
         <div
           class="ToBeDelivered-content"
-          v-for="item in delivering"
+          v-for="(item,index) in delivering"
           :key="index + item[0].order_id + item[0].product_id"
         >
           <ul>
@@ -177,9 +177,9 @@
           </ul>
         </div>
       </div>
-      <div v-else class="notList">暂无发货中</div>
-      <!-- 发货中订单主要内容END -->
-      <!-- 发货中 END-->
+      <div v-else class="notList">暂无待收货</div>
+      <!-- 待收货订单主要内容END -->
+      <!-- 待收货 END-->
     </div>
     <!-- 主体区域END -->
   </div>
@@ -194,15 +194,17 @@ export default {
       saleList: [],
       saleList2: [], //上架订单数据
       delivery: [], //待发货订单数据
-      delivering: [], //发货中订单数据
+      delivering: [], //待收货订单数据
       delivered: [], //已发货订单数据
     };
   },
   activated() {
     // 获取数据
+    //token携带
     this.$axios.defaults.headers.common[
       "Authorization"
     ] = this.$store.getters.getUser.token;
+    //获取上架信息
     this.$axios
       .post("/product/getAddProduct", {
         from_user: this.$store.getters.getUser.uuid,
@@ -224,14 +226,14 @@ export default {
         if (res.data.code === "001") {
           const saleList = res.data.orders;
           let delivery = [], //待发货订单数据
-            delivering = [], //发货中订单数据
+            delivering = [], //待收货订单数据
             delivered = []; //已发货订单数据
           saleList.forEach((item) => {
             switch (item[0].order_state) {
               case "待发货":
                 delivery.push(item);
                 break;
-              case "发货中":
+              case "待收货":
                 delivering.push(item);
                 break;
               case "已收货":
@@ -261,7 +263,13 @@ export default {
         })
         .then((res) => {
           if (res.data.code === "001") {
-            this.notifySuccess(res.data.msg);
+            this.delivery = this.delivery.filter(item=>{
+              if(item.product_id!==product_id){
+                this.delivering.push(item)
+              }
+              return item.product_id===product_id
+            })
+            this.notifySucceed(res.data.msg);
           } else {
             this.notifyError(res.data.msg);
           }

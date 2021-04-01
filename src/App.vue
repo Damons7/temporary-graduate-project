@@ -56,7 +56,6 @@
       <el-header>
         <el-menu
           :default-active="activeIndex"
-          class="el-menu-demo"
           mode="horizontal"
           active-text-color="#409eff"
           router
