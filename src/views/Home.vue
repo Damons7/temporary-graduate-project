@@ -38,16 +38,6 @@
         <div class="appliance" id="promo-menu">
           <div class="box-head">
             <div class="box-title">电子设备</div>
-            <div class="box-more" id="box-more">
-              <Tabs :val="2" @fromChild="getChildMsg">
-                <template v-slot:1>
-                  <span>手机</span>
-                </template>
-                <template v-slot:2>
-                  <span>电脑</span>
-                </template>
-              </Tabs>
-            </div>
           </div>
           <div class="box-body">
             <div class="box-promo-list">
@@ -79,19 +69,6 @@
         <div class="amusement" id="promo-menu">
           <div class="box-head">
             <div class="box-title">娱乐</div>
-            <div class="box-more" id="box-more">
-              <Tabs :val="3" @fromChild="getChildMsg2">
-                <template v-slot:1>
-                  <span>热门</span>
-                </template>
-                <template v-slot:2>
-                  <span>保护套</span>
-                </template>
-                <template v-slot:3>
-                  <span>充电器</span>
-                </template>
-              </Tabs>
-            </div>
           </div>
           <div class="box-body">
             <div class="box-promo-list">
@@ -128,19 +105,6 @@
           </div>
           <div class="box-head">
             <div class="box-title">其他宝藏</div>
-            <div class="box-more" id="box-more">
-              <Tabs :val="3" @fromChild="getChildMsg2">
-                <template v-slot:1>
-                  <span>热门</span>
-                </template>
-                <template v-slot:2>
-                  <span>保护套</span>
-                </template>
-                <template v-slot:3>
-                  <span>充电器</span>
-                </template>
-              </Tabs>
-            </div>
           </div>
           <div class="box-body">
             <div class="box-promo-list">

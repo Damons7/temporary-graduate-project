@@ -42,7 +42,10 @@ const routes = [
   {
     path: '/sale',
     name: 'Sale',
-    component: () => import('../views/Sale.vue')
+    component: () => import('../views/Sale.vue'),
+    meta: {
+      requireAuth: true // 需要验证登录状态
+    }
   },
   //添加我上架的
   {

@@ -27,7 +27,7 @@
         <div v-else class="top-nav">
           <span class="top-nav-wecome">欢迎</span>
           <router-link to="/user" tag="div" class="top-nav-user">
-            {{ this.$store.getters.getUser.userName }}
+            {{ this.$store.getters.getUser.userName }} 
           </router-link>
 
           <el-popover
@@ -114,7 +114,7 @@
             <span>|</span>
             <router-link to="/about">关于我们</router-link>
           </div>
-          <p class="footer-coty">商城版权所有 &copy; 2012-2021</p>
+          <p class="footer-coty">商城版权所有 &copy; 2020-2021</p>
         </div>
       </el-footer>
       <!-- 底栏容器END -->
@@ -144,18 +144,6 @@ export default {
       // 如果已经登录，设置vuex登录状态
       this.setUser(JSON.parse(localStorage.getItem("user")));
     }
-    /* window.setTimeout(() => {
-      this.$message({
-        duration: 0,
-        showClose: true,
-        message: `
-        <p>如果觉得这个项目还不错，</p>
-        <p style="padding:10px 0">您可以给项目源代码仓库点Star支持一下，谢谢！</p>
-        <p><a href="https://github.com/hai-27/vue-store" target="_blank">Github传送门</a></p>`,
-        dangerouslyUseHTMLString: true,
-        type: "success"
-      });
-    }, 1000 * 60); */
   },
   computed: {
     ...mapGetters(["getUser", "getNum"]),

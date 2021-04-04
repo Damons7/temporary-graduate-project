@@ -2,7 +2,6 @@
  * @Description: 我的购物车页面组件
  * @Author: 李鸿智
  -->
-
 <template>
   <div class="shoppingCart">
     <!-- 购物车头部 -->
@@ -145,9 +144,7 @@
   </div>
 </template>
 <script>
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
-
+import { mapActions,mapGetters } from "vuex";
 export default {
   data() {
     return {};

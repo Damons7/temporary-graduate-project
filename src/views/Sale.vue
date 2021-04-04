@@ -188,8 +188,8 @@
 export default {
   data() {
     return {
-      item: [{ A: 1 }],
-      orders: [{ B: 2 }],
+      item: [],
+      orders: [],
       ToBeDelivered: [],
       saleList: [],
       saleList2: [], //上架订单数据

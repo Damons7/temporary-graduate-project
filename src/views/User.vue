@@ -16,6 +16,7 @@
           <el-button class="update-userInfo" @click="updateInfo">{{
             updateData.updateBtnText
           }}</el-button>
+          <!-- 返回确认弹框 -->
           <el-popover placement="top" width="180" v-model="updateData.popover">
             <div>返回将不保存已修改信息，确定返回？</div>
             <div style="text-align: right; margin: 10px 10px">
@@ -63,7 +64,6 @@
                 :on-remove="handleRemove"
                 :show-file-list="true"
                 :auto-upload="false"
-                :before-upload="beforeAvatarUpload"
               >
                 <i class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
@@ -239,6 +239,7 @@
 <script>
 import { mapActions } from "vuex";
 import userDefault from "../../public/imgs/userDefault.png";
+import { beforeAvatarUpload } from "../utils/index";
 export default {
   name: "User",
   data() {
@@ -298,7 +299,7 @@ export default {
       //上传图片
       const file = this.$refs.upload.uploadFiles[0];
       const suffix = file.raw.name.split(".").pop();
-      const reName = this.$store.getters.getUser.uuid + "." + suffix;
+      const reName = `${this.$store.getters.getUser.uuid}.${suffix}`;
       const reFile = new File([file.raw], reName, {
         type: file.raw.type,
       });
@@ -322,7 +323,9 @@ export default {
     },
     //改变图片钩子
     handleChange(file, fileList) {
-      if (!this.beforeAvatarUpload(file.raw)) {
+      const msg = beforeAvatarUpload(file.raw);
+      if (msg) {
+        this.notifyError(msg);
         this.$refs.upload.uploadFiles.pop();
         return;
       }
@@ -333,23 +336,8 @@ export default {
       }
     },
     //删除图片钩子
-    handleRemove(file) {
-      console.log(file, "删除");
+    handleRemove() {
       this.uploadDisabled = false;
-    },
-    //限制上传图片标准
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isPNG = file.type === "image/png";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG && !isPNG) {
-        this.notifyError("仅支持 JPG, PNG 格式!");
-      }
-      if (!isLt2M) {
-        this.notifyError("图片大小必须小于2MB!");
-      }
-      return (isJPG || isPNG) && isLt2M;
     },
     //修改信息
     updateInfo() {

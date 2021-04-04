@@ -141,7 +141,6 @@
               :on-remove="handleRemove"
               :show-file-list="true"
               :auto-upload="false"
-              :before-upload="beforeAvatarUpload"
             >
               <i class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
@@ -166,7 +165,8 @@
   </div>
 </template>
 <script>
-import { checkUpload } from "../utils/checkUpload";
+import { checkUpload } from "../utils";
+import {beforeAvatarUpload} from "../utils/index";
 export default {
   name: "AddSale",
   data() {
@@ -294,7 +294,9 @@ export default {
     },
     //改变图片钩子
     handleChange(file, fileList) {
-      if (!this.beforeAvatarUpload(file.raw)) {
+      const msg =beforeAvatarUpload(file.raw);
+      if (msg) {
+         this.notifyError(msg);
         this.$refs.upload.uploadFiles.pop();
         return;
       }
@@ -309,20 +311,6 @@ export default {
       console.log(file, "删除");
       this.uploadDisabled = false;
       this.fileList = [];
-    },
-    //限制上传图片标准
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isPNG = file.type === "image/png";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG && !isPNG) {
-        this.notifyError("仅支持 JPG, PNG 格式!");
-      }
-      if (!isLt2M) {
-        this.notifyError("图片大小必须小于2MB!");
-      }
-      return (isJPG || isPNG) && isLt2M;
     },
   },
   activated() {

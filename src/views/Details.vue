@@ -214,6 +214,10 @@ export default {
         this.$store.dispatch("setShowLogin", true);
         return;
       }
+      if (this.productDetails.from_user === this.$store.getters.getUser.uuid) {
+        this.notifyError("不能收藏自己上架的商品~");
+        return;
+      }
       this.$axios.defaults.headers.common[
         "Authorization"
       ] = this.$store.getters.getUser.token;

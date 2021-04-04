@@ -6,7 +6,7 @@
   <div class="item">
     <ul>
       <li v-for="item in list" :key="item.product_id">
-        <el-popover placement="top" v-model="visible">
+        <el-popover placement="top">
           <p class="popover-p">确定删除吗？</p>
           <div style="text-align: right; margin: 10px 0 0">
             <el-button
@@ -14,9 +14,6 @@
               size="mini"
               @click="deleteCollect(item.product_id)"
               >确定</el-button
-            >
-            <el-button type="default" size="mini" @click="visible = false"
-              >取消</el-button
             >
           </div>
           <i
@@ -65,7 +62,6 @@ export default {
     return {
       routerToDetail: "/goods/details",
       routerToUpdate: "/sale/updateSale",
-      visible: false,
     };
   },
   computed: {
@@ -84,6 +80,7 @@ export default {
     },
   },
   methods: {
+    //删除收藏
     deleteCollect(product_id) {
       this.$axios.defaults.headers.common[
         "Authorization"
@@ -111,7 +108,6 @@ export default {
               // 提示删除失败信息
               this.notifyError(res.data.msg);
           }
-          this.visible = false;
         })
         .catch((err) => {
           return Promise.reject(err);

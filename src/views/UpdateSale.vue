@@ -12,10 +12,10 @@
         </p>
         <p>更新上架商品</p>
 
-        <el-button class="returnProduct" @click="test"
+        <el-button class="returnProduct" @click="isReturn = true"
           >下架该商品</el-button
         >
-            <!-- 确认下架弹窗 -->
+        <!-- 确认下架弹窗 -->
         <el-popover
           placement="top"
           width="180"
@@ -34,7 +34,6 @@
         </el-popover>
         <!-- 确认下架弹窗END -->
       </div>
-    
     </div>
     <!-- 头部END -->
 
@@ -155,7 +154,6 @@
               :on-remove="handleRemove"
               :show-file-list="true"
               :auto-upload="false"
-              :before-upload="beforeAvatarUpload"
               :file-list="fileList"
             >
               <i class="el-icon-plus avatar-uploader-icon"></i>
@@ -170,7 +168,7 @@
           <a
             href="javascript:void(0);"
             class="btn-base btn-primary"
-            @click="submitForm2"
+            @click="submitForm"
             >更新</a
           >
         </div>
@@ -181,8 +179,8 @@
   </div>
 </template>
 <script>
-import { checkUpload } from "../utils/checkUpload";
-
+import { checkUpload } from "../utils";
+import { beforeAvatarUpload ,getBase64Image,dataURLtoBlob} from "../utils/index";
 export default {
   name: "UpdateSale",
   data() {
@@ -253,74 +251,14 @@ export default {
     this.productID = "";
   },
   methods: {
-    test(){
-      console.log(1);
-     this.isReturn = true
-    },
-    //上传商品信息
-    submitForm() {
-      //用formdata传递数据
-      const formData = new FormData();
-      //上传图片
-      const file = this.$refs.upload.uploadFiles;
-
-      const {
-        saleType,
-        name,
-        num,
-        price,
-        selling_price,
-        intro,
-        title,
-        deliveryType,
-        product_id,
-      } = this.productForm;
-      for (let i = 0; i < file.length; i++) {
-        const suffix = file[i].name.split(".").pop();
-        const reName = `${saleType}_${name}_${i + 1}.${suffix}`;
-        const reFile = new File([file[i].raw], reName, {
-          type: file[i].raw.type,
-        });
-        formData.append("file", reFile, reName);
-      }
-      const productsData = {
-        product_name: name,
-        product_id: product_id,
-        product_num: num,
-        product_price: price,
-        product_selling_price: selling_price,
-        product_intro: intro,
-        product_title: title,
-        category_name: saleType,
-        deliveryType: deliveryType,
-      };
-      formData.append("productsData", JSON.stringify(productsData));
-      console.log(formData);
-      //   this.$axios
-      //     .post("/product/updateProduct", formData)
-      //     .then((res) => {
-      //       if (res.data.code === "001") {
-      //         this.notifySucceed(res.data.msg);
-      //         this.uploadDisabled = false;
-      //         this.$refs.upload.uploadFiles.pop();
-      //         this.$router.push("/sale");
-      //       } else {
-      //         this.notifyError(res.data.msg);
-      //       }
-      //     })
-      //     .catch((err) => {
-      //       return Promise.reject(err);
-      //     });
-    },
     //更新商品信息
-    async submitForm2() {
+    async submitForm() {
       //校验更新数据
       const msg = checkUpload(this.productForm);
       if (msg) {
         this.notifyError(msg);
         return;
       }
-      let that = this;
       //用formdata传递数据
       const formData = new FormData();
       //上传图片
@@ -347,9 +285,9 @@ export default {
         const getImg = () => {
           return new Promise((res, rej) => {
             img.onload = function () {
-              const base64 = that.getBase64Image(img);
+              const base64 = getBase64Image(img);
               //Base64字符串转二进制
-              res(that.dataURLtoBlob(base64));
+              res(dataURLtoBlob(base64));
             };
             img.onerror = () => {
               rej("");
@@ -395,7 +333,9 @@ export default {
     //改变图片钩子（添加图片）
     handleChange(file, fileList) {
       //添加前验证图片格式
-      if (!this.beforeAvatarUpload(file.raw)) {
+      const msg = beforeAvatarUpload(file.raw);
+      if (msg) {
+        this.notifyError(msg);
         this.$refs.upload.uploadFiles.pop();
         return;
       }
@@ -411,44 +351,6 @@ export default {
     handleRemove(file) {
       this.uploadDisabled = false;
       this.fileList = this.fileList.filter((item) => item.name !== file.name);
-    },
-    //限制上传图片标准
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isPNG = file.type === "image/png";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG && !isPNG) {
-        this.notifyError("仅支持 JPG, PNG 格式!");
-      }
-      if (!isLt2M) {
-        this.notifyError("图片大小必须小于2MB!");
-      }
-      return (isJPG || isPNG) && isLt2M;
-    },
-    getBase64Image(img) {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      const ext = img.src.substring(img.src.lastIndexOf(".") + 1).toLowerCase();
-      const dataURL = canvas.toDataURL("image/" + ext);
-      return dataURL;
-    },
-    //Base64字符串转二进制
-    dataURLtoBlob(dataurl) {
-      const arr = dataurl.split(","),
-        mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      return new Blob([u8arr], {
-        type: mime,
-      });
     },
     getProduct(val) {
       this.$axios
@@ -491,7 +393,6 @@ export default {
             });
           });
           this.fileList = teamArr;
-          console.log(this.fileList);
         })
         .catch((err) => {
           return Promise.reject(err);
@@ -501,7 +402,7 @@ export default {
     returnProduct() {
       this.$axios
         .post("/product/returnProduct", {
-          product_id: this.productID
+          product_id: this.productID,
         })
         .then((res) => {
           if (res.data.code === "001") {
