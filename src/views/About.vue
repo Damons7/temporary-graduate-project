@@ -6,8 +6,12 @@
   <div class="about" id="about" name="about">
     <div class="about-header">
       <div class="about-title">
-        <i class="el-icon-tickets" style="color: #ff6700;"></i>
+        <i class="el-icon-tickets" style="color: #ff6700"></i>
         关于我们
+        <div class="test1">
+          <div class="test3"></div>
+        </div>
+        <div class="test2"></div>
       </div>
     </div>
     <div class="about-content">
@@ -23,7 +27,7 @@ export default {
   // }
 };
 </script>
-<style scoped>
+<style lang='less'>
 .about {
   background-color: #f5f5f5;
 }

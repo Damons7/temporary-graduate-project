@@ -8,7 +8,11 @@
     <div class="home-swiper">
       <el-carousel height="462px">
         <el-carousel-item v-for="item in carousel" :key="item.carousel_id">
-          <img style="height: 100%" :src="item.imgPath" :alt="item.describes" />
+          <img
+            style="height: 100%"
+            :src="$target + item.imgPath"
+            :alt="item.describes"
+          />
         </el-carousel-item>
       </el-carousel>
     </div>
@@ -24,7 +28,7 @@
           <div class="box-body">
             <div class="box-promo-list">
               <router-link to>
-                <img :src="$target + 'public/imgs/phone/phone.png'" />
+                <img :src="$target + 'public/imgs/book/book.jpg'" />
               </router-link>
             </div>
             <div class="box-list">
@@ -44,16 +48,12 @@
               <ul>
                 <li>
                   <img
-                    :src="
-                      $target + 'public/imgs/appliance/appliance-promo1.png'
-                    "
+                    :src="$target + 'public/imgs/appliance2/appliance1.jpg'"
                   />
                 </li>
                 <li>
                   <img
-                    :src="
-                      $target + 'public/imgs/appliance/appliance-promo2.png'
-                    "
+                    :src="$target + 'public/imgs/appliance2/appliance2.jpg'"
                   />
                 </li>
               </ul>
@@ -75,17 +75,13 @@
               <ul>
                 <li>
                   <img
-                    :src="
-                      $target + 'public/imgs/accessory/accessory-promo1.png'
-                    "
+                    :src="$target + 'public/imgs/amusement/amusement1.jpg'"
                     alt
                   />
                 </li>
                 <li>
                   <img
-                    :src="
-                      $target + 'public/imgs/accessory/accessory-promo2.png'
-                    "
+                    :src="$target + 'public/imgs/amusement/amusement2.jpg'"
                     alt
                   />
                 </li>
@@ -101,7 +97,7 @@
         <!-- 其他宝藏 -->
         <div class="amusement" id="promo-menu">
           <div class="myTest">
-            <img src="https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/59e8fc8ba9718c266882719fb4bbcedd.jpg?thumb=1&w=1226&h=120&f=webp&q=90" alt="">
+            <img :src="$target + 'public/imgs/accessory.jpg'" alt="" />
           </div>
           <div class="box-head">
             <div class="box-title">其他宝藏</div>
@@ -111,17 +107,13 @@
               <ul>
                 <li>
                   <img
-                    :src="
-                      $target + 'public/imgs/accessory/accessory-promo1.png'
-                    "
+                    :src="$target + 'public/imgs/accessory/accessory1.jpg'"
                     alt
                   />
                 </li>
                 <li>
                   <img
-                    :src="
-                      $target + 'public/imgs/accessory/accessory-promo2.png'
-                    "
+                    :src="$target + 'public/imgs/accessory/accessory2.jpg'"
                     alt
                   />
                 </li>
@@ -148,7 +140,7 @@ export default {
       amusementList: [], //配件商品列表
       amusementHotList: [], //热门配件商品列表
       protectingShellList: [], // 保护套商品列表
-      accessoryList:[],//其他宝藏列表
+      accessoryList: [], //其他宝藏列表
       chargerList: [], //充电器商品列表
       applianceActive: 1, // 家电当前选中的商品分类
       amusementActive: 1, // 配件当前选中的商品分类
@@ -200,21 +192,18 @@ export default {
     this.carousel = [
       {
         carousel_id: "1",
-        imgPath:
-          "https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/0ef4160c861b998239bce9adb82341e7.jpg?thumb=1&w=1226&h=460&f=webp&q=90",
+        imgPath: "public/imgs/cms1.jpg",
       },
       {
         carousel_id: "2",
-        imgPath:
-          "https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/4de7a3d707e49a2931d4cd4b4f5c7ed2.jpg?thumb=1&w=1226&h=460&f=webp&q=90",
+        imgPath: "public/imgs/cms2.jpg",
       },
       {
         carousel_id: "3",
-        imgPath:
-          "https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/b5ed5762d5298d772f55eae0915ed983.jpg?w=2452&h=920",
+        imgPath: "public/imgs/cms3.jpg",
       },
     ];
-  
+
     this.miTvList = this.bookList; // 小米电视商品列表
     // this.applianceList = this.bookList; // 家电商品列表
     this.applianceHotList = this.bookList; //热门家电商品列表
@@ -224,7 +213,7 @@ export default {
     this.chargerList = this.bookList; //充电器商品列表
 
     this.getPromo("书籍", "bookList");
-     this.getPromo("娱乐", "amusementList");
+    this.getPromo("娱乐", "amusementList");
     this.getPromo("电子设备", "applianceList");
     this.getPromo("其他宝藏", "accessoryList");
   },
